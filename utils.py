@@ -29,7 +29,7 @@ def divide_dataset(X, y, fator=0.7, seed=42):
 
     return (X_train, y_train, X_test, y_test)
 
-def z_score(X, cols):
+def z_score(X, cols=None):
     """ Aplica a normalização ~N(0,1) também conhecida como z_score
     
     Arguments:
@@ -39,11 +39,14 @@ def z_score(X, cols):
     Returns:
         Matriz -- Matriz de atributos dos exemplos transformada
     """
+    X_ = np.copy(X)
+    if cols is None:
+        cols = np.arange(1,X_.shape[1])
     for col in cols:
-        X[:,col] = (X[:,col] - np.mean(X[:,col]))/np.std(X[:,col])
-    return X
+        X_[:,col] = (X_[:,col] - np.mean(X_[:,col]))/np.std(X_[:,col])
+    return X_
     
-def min_max(X, cols):
+def min_max(X, cols=None):
     """ Aplica a normalização min max
     
     Arguments:
@@ -52,8 +55,33 @@ def min_max(X, cols):
     
     Returns:
         Matriz -- Matriz de atributos dos exemplos transformada
-    """  
+    """ 
+    X_ = np.copy(X)
+    if cols is None:
+        cols = np.arange(1,X_.shape[1])
     for col in cols:
-        X[:,col] = (X[:,col] - np.min(X[:,col]))/(np.max(X[:,col]) - np.min(X[:,col]))
-    return X
+        X_[:,col] = (X_[:,col] - np.min(X_[:,col]))/(np.max(X_[:,col]) - np.min(X_[:,col]))
+    return X_
     
+def completar_com(X, func, cols=None):
+    """ Aplica a funcção "func" para todos os missing values
+        somente da coluna específicada em "cols" ou em todas 
+    
+    Arguments:
+        X {ndarray} -- X
+        func {function} -- função de agregação para ser aplicada nos dados faltantes
+    
+    Keyword Arguments:
+        cols {list} -- Lista de colunas a aplicar (default: {None} - Todas)
+    
+    Returns:
+        np.ndarray -- X modificado
+    """
+    X_ = np.copy(X)
+    if cols is None:
+        cols = np.arange(1,X_.shape[1])
+    for col in cols:
+        val = func(X_[~np.isnan(X_[:,col]), col])
+        X_[np.isnan(X_[:,col]), col] = val
+
+    return X_
