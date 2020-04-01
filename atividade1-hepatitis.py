@@ -61,7 +61,6 @@ if __name__ == "__main__":
     # Dataset Hepatitis
     # Sem normalização
     input_path='./data/hepatitis/hepatitis.data'
-    # d={"Iris-setosa":[1,0,0], "Iris-versicolor":[0,1,0],"Iris-virginica":[0,0,1]}
 
     X, y = obter_dataset_hepatitis(input_path)
     # Completando todos os dados faltantes com a média de sua respectiva coluna
