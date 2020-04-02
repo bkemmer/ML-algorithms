@@ -62,6 +62,7 @@ def regressao_logistica(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e
 
     return w
 
+<<<<<<< HEAD
 # TODO: colocar critério de parada na logistica
         # if np.linalg.norm(w) < tolerancia:
         #     break
@@ -80,3 +81,27 @@ def preditor_logistico(X, w):
     y_hat[y_hat >= 0.5] = 1
     y_hat[y_hat < 0.5] = -1
     return y_hat 
+=======
+def preditor_logistico(X, w, corte=0.5):
+    """[summary]
+    
+    Arguments:
+        X {[type]} -- [description]
+        w {[type]} -- [description]
+    
+    Keyword Arguments:
+        corte {int} -- [description] (default: {0})
+    
+    Returns:
+        [type] -- [description]
+    """
+    y_hat = logit(np.sum(w*X, axis=1))
+    y_hat[y_hat >= corte] = 1
+    y_hat[y_hat < corte] = -1
+    return y_hat 
+
+
+
+            # if np.linalg.norm(w) < tolerancia:
+        #     break
+>>>>>>> 0ecee76c6cb14f00bc0295261c867c204525c5d3
