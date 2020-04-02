@@ -36,8 +36,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import utils
-from regressao_linear import regressao_linear, acuracia, preditor_linear, plot_regularizacao
+from utils import acuracia, divide_dataset, z_score, min_max
+from regressao_linear import regressao_linear, preditor_linear, plot_regularizacao
 
 def obter_dataset_hepatitis(input_path):
     """ Função lê o dataset e retorna X, y
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     X, y = obter_dataset_hepatitis(input_path)
     # Completando todos os dados faltantes com a média de sua respectiva coluna
-    X = utils.completar_com(X, np.mean)
+    X = completar_com(X, np.mean)
     
     print('5 exemplos de X:')
     print(X[0:5, :])
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     print('Dimensão de X: ', np.shape(X))
     print('Dimensão de : ', np.shape(y))
 
-    X_train, y_train, X_test, y_test = utils.divide_dataset(X, y)
+    X_train, y_train, X_test, y_test = divide_dataset(X, y)
     print('Dimensão do treino e teste:', np.shape(X_train), np.shape(X_test))
 
     w = regressao_linear(X_train, y_train)
@@ -82,15 +82,15 @@ if __name__ == "__main__":
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score
-    X_z_score = utils.z_score(X)
-    X_train, y_train, X_test, y_test = utils.divide_dataset(X_z_score, y)
+    X_z_score = z_score(X)
+    X_train, y_train, X_test, y_test = divide_dataset(X_z_score, y)
     w = regressao_linear(X_train, y_train)
     y_hat = preditor_linear(w, X_test)
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com min max
-    X_min_max = utils.min_max(X)
-    X_train, y_train, X_test, y_test = utils.divide_dataset(X_min_max, y)
+    X_min_max = min_max(X)
+    X_train, y_train, X_test, y_test = divide_dataset(X_min_max, y)
     w = regressao_linear(X_train, y_train)
     y_hat = preditor_linear(w, X_test)
     _ = acuracia(y_hat, y_test)
