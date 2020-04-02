@@ -21,8 +21,10 @@ As variávies independentes incluem: número de gravidezes que o paciente teve, 
 import numpy as np
 import matplotlib.pyplot as plt
 
-import utils
-from regressao_linear import regressao_linear, acuracia, preditor_linear, plot_regularizacao
+from utils import acuracia, divide_dataset, z_score, min_max
+from regressao_linear import regressao_linear, preditor_linear, plot_regularizacao
+
+from regressao_logistica import regressao_logistica, preditor_logistico
 
 def obter_dataset_hepatitis(input_path):
     """ Função lê o dataset e retorna X, y
@@ -57,7 +59,7 @@ if __name__ == "__main__":
     print('Dimensão de X: ', np.shape(X))
     print('Dimensão de : ', np.shape(y))
 
-    X_train, y_train, X_test, y_test = utils.divide_dataset(X, y)
+    X_train, y_train, X_test, y_test = divide_dataset(X, y)
     print('Dimensão do treino e teste:', np.shape(X_train), np.shape(X_test))
 
     w = regressao_linear(X_train, y_train)
@@ -66,29 +68,37 @@ if __name__ == "__main__":
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score
-    X_z_score = utils.z_score(X)
-    X_train, y_train, X_test, y_test = utils.divide_dataset(X_z_score, y)
+    X_z_score = z_score(X)
+    X_train, y_train, X_test, y_test = divide_dataset(X_z_score, y)
     w = regressao_linear(X_train, y_train)
     y_hat = preditor_linear(w, X_test)
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com min max
-    X_min_max = utils.min_max(X)
-    X_train, y_train, X_test, y_test = utils.divide_dataset(X_min_max, y)
+    X_min_max = min_max(X)
+    X_train, y_train, X_test, y_test = divide_dataset(X_min_max, y)
     w = regressao_linear(X_train, y_train)
     y_hat = preditor_linear(w, X_test)
     _ = acuracia(y_hat, y_test)
 
-    # # Com regularização
-    # Variando 0<=lambda<1 
-    plot_regularizacao(X_train, y_train, X_test, y_test,
-                        output_file_name="./imgs/diabetes_acuracia_regressor_linear.png")
-    # Variando 0<=lambda<10
-    plot_regularizacao(X_train, y_train, X_test, y_test, 
-                        limits_min=0, limits_max=1000, 
-                        output_file_name="./imgs/diabetes_acuracia_regressor_linear10.png")
+    # Utilizando a regressao logistica
+    print("Regressão logística:")
+    w_log = regressao_logistica(X_train, y_train, taxa_aprendizado=0.5, max_iteracoes=1000)
 
-    # Variando 0<=lambda<100
-    plot_regularizacao(X_train, y_train, X_test, y_test, 
-                        limits_min=0, limits_max=10000, 
-                        output_file_name="./imgs/diabetes_acuracia_regressor_linear100.png")
+    y_hat_log = preditor_logistico(X_test, w_log)
+    _ = acuracia(y_hat_log, y_test)
+
+
+    # # # Com regularização
+    # # Variando 0<=lambda<1 
+    # plot_regularizacao(X_train, y_train, X_test, y_test,
+    #                     output_file_name="./imgs/diabetes_acuracia_regressor_linear.png")
+    # # Variando 0<=lambda<10
+    # plot_regularizacao(X_train, y_train, X_test, y_test, 
+    #                     limits_min=0, limits_max=1000, 
+    #                     output_file_name="./imgs/diabetes_acuracia_regressor_linear10.png")
+
+    # # Variando 0<=lambda<100
+    # plot_regularizacao(X_train, y_train, X_test, y_test, 
+    #                     limits_min=0, limits_max=10000, 
+    #                     output_file_name="./imgs/diabetes_acuracia_regressor_linear100.png")

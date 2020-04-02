@@ -1,5 +1,18 @@
 import numpy as np
 
+def acuracia(y_hat, y_test, show=True):
+    """ Retorna a acurácia do modelo"""
+    # Problema de classificação binária
+    if len(np.shape(y_test)) < 2:
+        acc = np.sum(np.sign(y_hat) == y_test)/len(y_test)
+    # Caso tenha mais classes
+    else:
+        y_test = np.argmax(y_test, axis=1)
+        acc = np.sum(y_hat == y_test)/len(y_test)
+    if show:
+        print('Acurácia: {:.4f}'.format(acc))
+    return acc
+
 def divide_dataset(X, y, fator=0.7, seed=42):
     """[summary]
 
@@ -85,3 +98,4 @@ def completar_com(X, func, cols=None):
         X_[np.isnan(X_[:,col]), col] = val
 
     return X_
+

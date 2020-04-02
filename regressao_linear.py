@@ -35,19 +35,6 @@ def preditor_linear(w, X):
         y_hat[:, k] = np.sum(w[:, k]*X, axis=1)
     return np.argmax(y_hat, axis=1)
 
-def acuracia(y_hat, y_test, show=True):
-    """ Retorna a acurácia do modelo"""
-    # Problema de classificação binária
-    if len(np.shape(y_test)) < 2:
-        acc = np.sum(np.sign(y_hat) == y_test)/len(y_test)
-    # Caso tenha mais classes
-    else:
-        y_test = np.argmax(y_test, axis=1)
-        acc = np.sum(y_hat == y_test)/len(y_test)
-    if show:
-        print('Acurácia: {:.2f}'.format(acc))
-    return acc
-
 def plot_regularizacao(X_train, y_train, X_test, y_test, 
                         limits_min=0, limits_max=100,
                         split_n=100, 
