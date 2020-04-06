@@ -31,7 +31,6 @@ def obter_dataset_iris(input_path, dict_str):
         (X, y) -- 
     """
     X = np.loadtxt(input_path, delimiter=',', dtype=np.float, usecols=(0,1,2,3))
-    X = np.concatenate((np.ones((len(X),1)), X), axis=1)
     y = np.loadtxt(input_path, delimiter=',', dtype=None, usecols=(4), encoding='UTF', converters={4:dict_str.get})
     return X,y
 
@@ -58,14 +57,14 @@ if __name__ == "__main__":
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score
-    X_z_score = z_score(X, cols=[1, 2, 3, 4])
+    X_z_score = z_score(X, cols=[0, 1, 2, 3])
     X_train, y_train, X_test, y_test = divide_dataset(X_z_score, y)
     w = regressao_linear(X_train, y_train)
     y_hat = preditor_linear(w, X_test)
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com min max
-    X_min_max = min_max(X, cols=[1, 2, 3, 4])
+    X_min_max = min_max(X, cols=[0, 1, 2, 3])
     X_train, y_train, X_test, y_test = divide_dataset(X_min_max, y)
     w = regressao_linear(X_train, y_train)
     y_hat = preditor_linear(w, X_test)

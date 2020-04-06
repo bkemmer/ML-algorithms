@@ -2,6 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from utils import acuracia
 
 def regressao_linear(X, y, lamdba=0):
     """ Cálculo da regressão linear na forma vetorial sem regularização
@@ -13,6 +14,8 @@ def regressao_linear(X, y, lamdba=0):
     Returns:
         [W] -- Matriz de pesos 
     """
+    # Adicionadno a coluna x_0 que será multiplicada com o viés (bias)
+    X = np.concatenate((np.ones((len(X),1)), X), axis=1)
     _, d = np.shape(X)
     return np.linalg.inv(X.T.dot(X) + lamdba*np.identity(d)).dot(X.T).dot(y)
 
@@ -26,8 +29,12 @@ def preditor_linear(w, X):
     Returns:
         classe -- classe estimada
     """
+    # Adicionadno a coluna x_0 que será multiplicada com o viés (bias)
+    X = np.concatenate((np.ones((len(X),1)), X), axis=1)
+
     if len(np.shape(w)) < 2:
-        return np.sum(w*X, axis=1)
+        y_hat = np.sum(w*X, axis=1)
+        return y_hat
 
     _, n_classes = np.shape(w)
     y_hat = np.ones((len(X), n_classes))

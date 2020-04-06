@@ -26,79 +26,111 @@ from regressao_linear import regressao_linear, preditor_linear, plot_regularizac
 
 from regressao_logistica import regressao_logistica, preditor_logistico
 
-def obter_dataset_hepatitis(input_path):
+# def obter_dataset_diabetes(input_path):
+#     """ Função lê o dataset e retorna X, y
+    
+#     Arguments:
+#         input_path {string} -- String com o caminho para o dataset
+#     Returns:
+#         (X, y) -- 
+#     """
+#     # data = np.genfromtxt(input_path, skip_header=0, delimiter=',', dtype=np.float, names=True)
+#     data = np.genfromtxt(input_path, skip_header=1, delimiter=',', dtype=np.float)
+#     X = data[:,:-1]
+#     # Adicionadno a coluna x_0 que será multiplicada com o viés (bias)
+#     X = np.concatenate((np.ones((len(X),1)), X), axis=1)
+#     y = data[:,-1]
+#     y[y == 0.] = -1
+#     y[y == 1.] = 1
+#     return X,y
+
+def obter_dataset_diabetesv2(input_path_train, input_path_test):
     """ Função lê o dataset e retorna X, y
     
     Arguments:
-        input_path {string} -- String com o caminho para o dataset
+        input_path_train {string} -- String com o caminho para o dataset dividido de treino
+        input_path_test {string} -- String com o caminho para o dataset dividido de teste
     Returns:
         (X, y) -- 
     """
-    # data = np.genfromtxt(input_path, skip_header=0, delimiter=',', dtype=np.float, names=True)
-    data = np.genfromtxt(input_path, skip_header=1, delimiter=',', dtype=np.float)
-    X = data[:,:-1]
-    # Adicionadno a coluna x_0 que será multiplicada com o viés (bias)
-    X = np.concatenate((np.ones((len(X),1)), X), axis=1)
-    y = data[:,-1]
-    y[y == 0.] = -1
-    y[y == 1.] = 1
-    return X,y
+    data_train = np.genfromtxt(input_path_train, skip_header=1, delimiter='\t', dtype=np.float)
+    X_train = data_train[:,:-1]
+    y_train = data_train[:,-1]
+    y_train[y_train == 0.] = -1
+    y_train[y_train == 1.] = 1
+
+    data_test = np.genfromtxt(input_path_test, skip_header=1, delimiter='\t', dtype=np.float)
+    X_test = data_test[:,:-1]
+    y_test = data_test[:,-1]
+    y_test[y_test == 0.] = -1
+    y_test[y_test == 1.] = 1
+
+    return X_train,y_train, X_test, y_test
 
 if __name__ == "__main__":
 
     # Dataset Diabetes
     # Sem normalização
-    input_path='./data/diabetes/diabetes.csv'
+    # input_path='./data/diabetes/diabetes.csv'
+    # X, y = obter_dataset_hepatitis(input_path)
 
-    X, y = obter_dataset_hepatitis(input_path)
+    input_path_train ='./data/diabetes/dataset_train.txt'
+    input_path_test ='./data/diabetes/dataset_teste.txt'
+    
+    # print('5 exemplos de X:')
+    # print(X[0:5, :])
+    # print('5 exemplos de y:')
+    # print(y[0:5])
+    # print('Dimensão de X: ', np.shape(X))
+    # print('Dimensão de : ', np.shape(y))
 
-    print('5 exemplos de X:')
-    print(X[0:5, :])
-    print('5 exemplos de y:')
-    print(y[0:5])
-    print('Dimensão de X: ', np.shape(X))
-    print('Dimensão de : ', np.shape(y))
-
-    X_train, y_train, X_test, y_test = divide_dataset(X, y)
+    # X_train, y_train, X_test, y_test = divide_dataset(X, y)
+    X_train, y_train, X_test, y_test = obter_dataset_diabetesv2(input_path_train, input_path_test)
     print('Dimensão do treino e teste:', np.shape(X_train), np.shape(X_test))
 
     w = regressao_linear(X_train, y_train)
     print('dimensão de w: ', np.shape(w))
     y_hat = preditor_linear(w, X_test)
+    print('Regressão linear s/normalização:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score
-    X_z_score = z_score(X)
-    X_train, y_train, X_test, y_test = divide_dataset(X_z_score, y)
+    X_z_score = z_score(X_train)
     w = regressao_linear(X_train, y_train)
     y_hat = preditor_linear(w, X_test)
+    print('Regressão linear z_score:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com min max
-    X_min_max = min_max(X)
-    X_train, y_train, X_test, y_test = divide_dataset(X_min_max, y)
+    X_min_max = min_max(X_train)
     w = regressao_linear(X_train, y_train)
     y_hat = preditor_linear(w, X_test)
+    print('Regressão linear min_max:')
     _ = acuracia(y_hat, y_test)
 
     # Utilizando a regressao logistica
     print("Regressão logística:")
-    w_log = regressao_logistica(X_train, y_train, taxa_aprendizado=0.5, max_iteracoes=1000)
-
+    w_log, erros = regressao_logistica(X_train, y_train, taxa_aprendizado=0.5, max_iteracoes=100)
     y_hat_log = preditor_logistico(X_test, w_log)
     _ = acuracia(y_hat_log, y_test)
+    plt.plot(erros)
 
 
-    # # # Com regularização
-    # # Variando 0<=lambda<1 
-    # plot_regularizacao(X_train, y_train, X_test, y_test,
-    #                     output_file_name="./imgs/diabetes_acuracia_regressor_linear.png")
-    # # Variando 0<=lambda<10
-    # plot_regularizacao(X_train, y_train, X_test, y_test, 
-    #                     limits_min=0, limits_max=1000, 
-    #                     output_file_name="./imgs/diabetes_acuracia_regressor_linear10.png")
+    # # Com regularização
+    # Variando 0<=lambda<1 
+    plot_regularizacao(X_train, y_train, X_test, y_test,
+                        output_file_name="./imgs/diabetes_acuracia_regressor_linear.png")
+    # Variando 0<=lambda<10
+    plot_regularizacao(X_train, y_train, X_test, y_test, 
+                        limits_min=0, limits_max=1000, 
+                        output_file_name="./imgs/diabetes_acuracia_regressor_linear10.png")
 
-    # # Variando 0<=lambda<100
-    # plot_regularizacao(X_train, y_train, X_test, y_test, 
-    #                     limits_min=0, limits_max=10000, 
-    #                     output_file_name="./imgs/diabetes_acuracia_regressor_linear100.png")
+    # Variando 0<=lambda<100
+    plot_regularizacao(X_train, y_train, X_test, y_test, 
+                        limits_min=0, limits_max=10000, 
+                        output_file_name="./imgs/diabetes_acuracia_regressor_linear100.png")
+
+    # Variando 0<=lambda<1000
+    plot_regularizacao(X_train, y_train, X_test, y_test, 
+                        limits_min=0, limits_max=100000, 
+                        output_file_name="./imgs/diabetes_acuracia_regressor_linear1000.png")

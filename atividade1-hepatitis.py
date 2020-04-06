@@ -36,7 +36,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import acuracia, divide_dataset, z_score, min_max
+from utils import acuracia, divide_dataset, z_score, min_max, completar_com
 from regressao_linear import regressao_linear, preditor_linear, plot_regularizacao
 
 def obter_dataset_hepatitis(input_path):
@@ -49,8 +49,6 @@ def obter_dataset_hepatitis(input_path):
     """
     data = np.genfromtxt(input_path, delimiter=',', dtype=np.float, missing_values='?')
     X = data[:,1:]
-    # Adicionadno a coluna x_0 que será multiplicada com o viés (bias)
-    X = np.concatenate((np.ones((len(X),1)), X), axis=1)
     y = data[:,0]
     y[y == 1.] = -1
     y[y == 2.] = 1
