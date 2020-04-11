@@ -36,6 +36,7 @@ def preditor_linear(w, X):
         y_hat = np.sum(w*X, axis=1)
         return y_hat
 
+    # Caso multi-class
     _, n_classes = np.shape(w)
     y_hat = np.ones((len(X), n_classes))
     for k in range(0, n_classes):
@@ -58,7 +59,7 @@ def plot_regularizacao(X_train, y_train, X_test, y_test,
         y_hat_test = preditor_linear(w, X_test)
         y_hat_train = preditor_linear(w, X_train)
         
-        w_means.append(np.mean(w))
+        w_means.append(np.mean(np.abs(w)))
         lamdbas.append(lamdba)
         acc_test.append(acuracia(y_hat_test, y_test, show=False))
         acc_train.append(acuracia(y_hat_train, y_train, show=False))

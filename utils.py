@@ -42,60 +42,79 @@ def divide_dataset(X, y, fator=0.7, seed=42):
 
     return (X_train, y_train, X_test, y_test)
 
-def z_score(X, cols=None):
+def z_score(X_train, X_test, cols=None):
     """ Aplica a normalização ~N(0,1) também conhecida como z_score
     
     Arguments:
-        X {Matriz} -- Matriz de atributos dos exemplos
+        X_train {Matriz} -- Matriz de atributos de treinamento
+        X_test {Matriz} -- Matriz de atributos de teste
         cols {list} -- colunas a ser aplicada a normalização
     
     Returns:
-        Matriz -- Matriz de atributos dos exemplos transformada
+        Matriz -- Matriz de atributos dos exemplos de treino transformada
+        Matriz -- Matriz de atributos dos exemplos de teste transformada
     """
-    X_ = np.copy(X)
+    X_train = np.copy(X_train)
+    X_test = np.copy(X_test)
     if cols is None:
-        cols = np.arange(1,X_.shape[1])
+        cols = np.arange(1,X_train.shape[1], dtype=int)
     for col in cols:
-        X_[:,col] = (X_[:,col] - np.mean(X_[:,col]))/np.std(X_[:,col])
-    return X_
+        mean_train = np.mean(X_train[:,col])
+        std_train = np.std(X_train[:,col])
+        # normalizando os exemplos de treinamento
+        X_train[:,col] = (X_train[:,col] - mean_train)/std_train
+        # normalizando os exemplos de teste
+        X_test[:,col] = (X_test[:,col] - mean_train)/std_train
+    return X_train, X_test
     
-def min_max(X, cols=None):
+def min_max(X_train, X_test, cols=None):
     """ Aplica a normalização min max
     
     Arguments:
-        X {Matriz} -- Matriz de atributos dos exemplos
+        X_train {Matriz} -- Matriz de atributos de treinamento
+        X_test {Matriz} -- Matriz de atributos de teste
         cols {list} -- colunas a ser aplicada a normalização
     
     Returns:
-        Matriz -- Matriz de atributos dos exemplos transformada
+        Matriz -- Matriz de atributos dos exemplos de treino transformada
+        Matriz -- Matriz de atributos dos exemplos de teste transformada
     """ 
-    X_ = np.copy(X)
+    X_train = np.copy(X_train)
+    X_test = np.copy(X_test)
     if cols is None:
-        cols = np.arange(1,X_.shape[1])
+        cols = np.arange(1,X_train.shape[1], dtype=int)
     for col in cols:
-        X_[:,col] = (X_[:,col] - np.min(X_[:,col]))/(np.max(X_[:,col]) - np.min(X_[:,col]))
-    return X_
+        min_train = np.min(X_train[:,col])
+        max_train = np.max(X_train[:,col])
+        # normalizando os exemplos de treinamento
+        X_train[:,col] = (X_train[:,col] - min_train)/(max_train - min_train)
+        # normalizando os exemplos de teste
+        X_test[:,col] = (X_test[:,col] - min_train)/(max_train - min_train)
+    return X_train, X_test
     
-def completar_com(X, func, cols=None):
+def completar_com(X_train, X_test, func, cols=None):
     """ Aplica a funcção "func" para todos os missing values
         somente da coluna específicada em "cols" ou em todas 
     
     Arguments:
-        X {ndarray} -- X
+        X_train {Matriz} -- Matriz de atributos de treinamento
+        X_test {Matriz} -- Matriz de atributos de teste
         func {function} -- função de agregação para ser aplicada nos dados faltantes
     
     Keyword Arguments:
         cols {list} -- Lista de colunas a aplicar (default: {None} - Todas)
     
     Returns:
-        np.ndarray -- X modificado
+        Matriz -- Matriz de atributos dos exemplos de treino transformada
+        Matriz -- Matriz de atributos dos exemplos de teste transformada
     """
-    X_ = np.copy(X)
+    X_train = np.copy(X_train)
+    X_test = np.copy(X_test)
     if cols is None:
-        cols = np.arange(1,X_.shape[1])
+        cols = np.arange(1,X_train.shape[1], dtype=int)
     for col in cols:
-        val = func(X_[~np.isnan(X_[:,col]), col])
-        X_[np.isnan(X_[:,col]), col] = val
-
-    return X_
+        val = func(X_train[~np.isnan(X_train[:,col]), col])
+        X_train[np.isnan(X_train[:,col]), col] = val
+        X_test[np.isnan(X_test[:,col]), col] = val
+    return X_train, X_test
 
