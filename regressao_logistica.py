@@ -32,7 +32,7 @@ def grad_erro(X, y, w):
     acc = 0
     N = len(X)
     for n in range(0,N):
-        acc += (y[n]*X[n,:]) / (1 + np.exp(y[n]*np.dot(w, X[n,:])))
+        acc += (y[n]*X[n]) / (1 + np.exp(y[n]*np.dot(w, X[n])))
     return -(1/N)*acc
 
 def erro(X, y, w):
@@ -48,8 +48,8 @@ def erro(X, y, w):
     """
     val_erro = 0
     N = len(X)
-    for n in range(1,N):
-        val_erro += np.log(1+np.exp(-y[n]*np.dot(w, X[n,:])))
+    for n in range(0,N):
+        val_erro += np.log(1+np.exp(-y[n]*np.dot(w, X[n])))
     return (1/N)*val_erro
 
 def regressao_logistica(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e-7):
@@ -74,17 +74,13 @@ def regressao_logistica(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e
     w_anterior = inicializa_w(d)
     
     erros = []
-    for _ in range(0, max_iteracoes):
+    for iteracao in range(0, max_iteracoes):
         w = w_anterior - taxa_aprendizado*grad_erro(X, y, w_anterior)
         w_anterior = w
         erros.append(erro(X, y, w))
         if np.linalg.norm(w_anterior) < tolerancia:
             return w, erros
     return w, erros
-
-# TODO: colocar critério de parada na logistica
-        # if np.linalg.norm(w) < tolerancia:
-        #     break
   
 def preditor_logistico(X, w):
     """ Preditor para regressão logística

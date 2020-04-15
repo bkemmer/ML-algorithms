@@ -57,7 +57,7 @@ def z_score(X_train, X_test, cols=None):
     X_train = np.copy(X_train)
     X_test = np.copy(X_test)
     if cols is None:
-        cols = np.arange(1,X_train.shape[1], dtype=int)
+        cols = np.arange(0,X_train.shape[1], dtype=int)
     for col in cols:
         mean_train = np.mean(X_train[:,col])
         std_train = np.std(X_train[:,col])
