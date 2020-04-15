@@ -53,21 +53,19 @@ if __name__ == "__main__":
     w = regressao_linear(X_train, y_train)
     print('dimensão de w: ', np.shape(w))
 
-    y_hat = preditor_linear(w, X_test)
+    y_hat = preditor_linear(X_test, w)
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score
-    X_z_score = z_score(X, cols=[0, 1, 2, 3])
-    X_train, y_train, X_test, y_test = divide_dataset(X_z_score, y)
-    w = regressao_linear(X_train, y_train)
-    y_hat = preditor_linear(w, X_test)
+    X_z_score_train, X_z_score_test = z_score(X_train, X_test, cols=[0, 1, 2, 3])
+    w = regressao_linear(X_z_score_train, y_train)
+    y_hat = preditor_linear(X_z_score_test, w)
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com min max
-    X_min_max = min_max(X, cols=[0, 1, 2, 3])
-    X_train, y_train, X_test, y_test = divide_dataset(X_min_max, y)
-    w = regressao_linear(X_train, y_train)
-    y_hat = preditor_linear(w, X_test)
+    X_min_max_train, X_min_max_test = min_max(X_train, X_test, cols=[0, 1, 2, 3])
+    w = regressao_linear(X_min_max_train, y_train)
+    y_hat = preditor_linear(X_min_max_test, w)
     _ = acuracia(y_hat, y_test)
 
     # Com regularização

@@ -83,21 +83,21 @@ if __name__ == "__main__":
 
     w = regressao_linear(X_train, y_train)
     print('dimensão de w: ', np.shape(w))
-    y_hat = preditor_linear(w, X_test)
+    y_hat = preditor_linear(X_test, w)
     print('Regressão linear s/normalização:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score
     X_z_score_train, X_z_score_test = z_score(X_train, X_test)
     w = regressao_linear(X_z_score_train, y_train)
-    y_hat = preditor_linear(w, X_z_score_test)
+    y_hat = preditor_linear(X_z_score_test, w)
     print('Regressão linear z_score:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com min max
     X_min_max_train, X_min_max_test = min_max(X_train, X_test)
     w = regressao_linear(X_train, y_train)
-    y_hat = preditor_linear(w, X_min_max_test)
+    y_hat = preditor_linear(X_min_max_test, w)
     print('Regressão linear min_max:')
     _ = acuracia(y_hat, y_test)
 

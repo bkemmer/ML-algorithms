@@ -67,7 +67,7 @@ def regressao_logistica(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e
     Returns:
         matriz -- Matriz de pesos W treinada
     """
-    X = np.concatenate((np.ones((len(X),1)), X), axis=1)
+    X = np.column_stack((np.ones((len(X),1)), X))
     _, d = np.shape(X)
 
     # Inicializa a matriz de pesos em W_0
@@ -92,7 +92,7 @@ def preditor_logistico(X, w):
     Returns:
         Vetor -- y_hat - Vetor com as classes preditas
     """
-    X = np.concatenate((np.ones((len(X),1)), X), axis=1)
+    X = np.column_stack((np.ones((len(X),1)), X))
     y_hat = logit(np.sum(w*X, axis=1))
     y_hat[y_hat >= 0.5] = 1
     y_hat[y_hat < 0.5] = -1

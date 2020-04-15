@@ -67,13 +67,14 @@ def z_score(X_train, X_test, cols=None):
         X_test[:,col] = (X_test[:,col] - mean_train)/std_train
     return X_train, X_test
     
-def min_max(X_train, X_test, cols=None):
+def min_max(X_train, X_test, cols=None, slack=0.5):
     """ Aplica a normalização min max
     
     Arguments:
         X_train {Matriz} -- Matriz de atributos de treinamento
         X_test {Matriz} -- Matriz de atributos de teste
         cols {list} -- colunas a ser aplicada a normalização
+        slack {float} -- multiplicador para o valor de máximo e mínimo (1+slack)
     
     Returns:
         Matriz -- Matriz de atributos dos exemplos de treino transformada
@@ -82,10 +83,10 @@ def min_max(X_train, X_test, cols=None):
     X_train = np.copy(X_train)
     X_test = np.copy(X_test)
     if cols is None:
-        cols = np.arange(1,X_train.shape[1], dtype=int)
+        cols = np.arange(0,X_train.shape[1], dtype=int)
     for col in cols:
-        min_train = np.min(X_train[:,col])
-        max_train = np.max(X_train[:,col])
+        min_train = np.min(X_train[:,col])*(1 + slack)
+        max_train = np.max(X_train[:,col])*(1 + slack)
         # normalizando os exemplos de treinamento
         X_train[:,col] = (X_train[:,col] - min_train)/(max_train - min_train)
         # normalizando os exemplos de teste
@@ -111,7 +112,7 @@ def completar_com(X_train, X_test, func, cols=None):
     X_train = np.copy(X_train)
     X_test = np.copy(X_test)
     if cols is None:
-        cols = np.arange(1,X_train.shape[1], dtype=int)
+        cols = np.arange(0,X_train.shape[1], dtype=int)
     for col in cols:
         val = func(X_train[~np.isnan(X_train[:,col]), col])
         X_train[np.isnan(X_train[:,col]), col] = val

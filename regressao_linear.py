@@ -15,11 +15,11 @@ def regressao_linear(X, y, lamdba=0):
         [W] -- Matriz de pesos 
     """
     # Adicionadno a coluna x_0 que será multiplicada com o viés (bias)
-    X = np.concatenate((np.ones((len(X),1)), X), axis=1)
+    X = np.column_stack((np.ones((len(X),1)), X))
     _, d = np.shape(X)
     return np.linalg.inv(X.T.dot(X) + lamdba*np.identity(d)).dot(X.T).dot(y)
 
-def preditor_linear(w, X):
+def preditor_linear(X, w):
     """ Preditor da função linear estimada
 
     Arguments:
@@ -30,7 +30,7 @@ def preditor_linear(w, X):
         classe -- classe estimada
     """
     # Adicionadno a coluna x_0 que será multiplicada com o viés (bias)
-    X = np.concatenate((np.ones((len(X),1)), X), axis=1)
+    X = np.column_stack((np.ones((len(X),1)), X))
 
     if len(np.shape(w)) < 2:
         y_hat = np.sum(w*X, axis=1)
@@ -56,8 +56,8 @@ def plot_regularizacao(X_train, y_train, X_test, y_test,
         lamdba = i/split_n
 
         w = regressao_linear(X_train, y_train, lamdba=lamdba)
-        y_hat_test = preditor_linear(w, X_test)
-        y_hat_train = preditor_linear(w, X_train)
+        y_hat_test = preditor_linear(X_test, w)
+        y_hat_train = preditor_linear(X_train, w)
         
         w_means.append(np.mean(np.abs(w)))
         lamdbas.append(lamdba)
