@@ -18,41 +18,41 @@ def inicializa_w(d, seed=42):
     np.random.seed(seed)
     return np.random.rand(d)
 
-def grad_erro(X, y, w):
+def grad_erro(X, y, w, N):
     """ Cálculo do gradiente da função de erro
     
     Arguments:
         X {matriz} -- matriz de exemplos
         y {Vetor} -- vetor de saída da classe
         w {matriz} -- Última matriz de pesos obtida
+        N {inteiro} -- Quantidade de elementos de X
     
     Returns:
         float -- Gradiente da função de erro 
     """
     acc = 0
-    N = len(X)
-    for n in range(0,N):
-        acc += (y[n]*X[n]) / (1 + np.exp(y[n]*np.dot(w, X[n])))
+    for i in range(0,N):
+        acc += (y[i]*X[i]) / (1 + np.exp(y[i]*np.dot(w, X[i])))
     return -(1/N)*acc
 
-def erro(X, y, w):
+def erro(X, y, w, N):
     """ Calcula o erro para a matriz atual
     
     Arguments:
-        X {matriz} -- matriz de exemplos
-        y {Vetor} -- vetor de saída da classe
+        X {matriz} -- Matriz de exemplos
+        y {Vetor} -- Vetor de saída da classe
         w {matriz} -- Última matriz de pesos obtida
+        N {inteiro} -- Quantidade de elementos de X
     
     Returns:
         float -- Erro calculado
     """
     val_erro = 0
-    N = len(X)
-    for n in range(0,N):
-        val_erro += np.log(1+np.exp(-y[n]*np.dot(w, X[n])))
+    for i in range(0,N):
+        val_erro += np.log(1+np.exp(-y[i]*np.dot(w, X[i])))
     return (1/N)*val_erro
 
-def regressao_logistica(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e-7):
+def regressao_logistica(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e-5):
     """ Regressão logística
     
     Arguments:
@@ -68,17 +68,18 @@ def regressao_logistica(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e
         matriz -- Matriz de pesos W treinada
     """
     X = np.column_stack((np.ones((len(X),1)), X))
-    _, d = np.shape(X)
+    N, d = np.shape(X)
 
     # Inicializa a matriz de pesos em W_0
     w_anterior = inicializa_w(d)
     
     erros = []
     for iteracao in range(0, max_iteracoes):
-        w = w_anterior - taxa_aprendizado*grad_erro(X, y, w_anterior)
+        grad = grad_erro(X, y, w_anterior, N)
+        w = w_anterior - taxa_aprendizado*grad
         w_anterior = w
-        erros.append(erro(X, y, w))
-        if np.linalg.norm(w_anterior) < tolerancia:
+        erros.append(erro(X, y, w, N))
+        if np.linalg.norm(grad) < tolerancia:
             return w, erros
     return w, erros
   
@@ -93,7 +94,7 @@ def preditor_logistico(X, w):
         Vetor -- y_hat - Vetor com as classes preditas
     """
     X = np.column_stack((np.ones((len(X),1)), X))
-    y_hat = logit(np.sum(w*X, axis=1))
+    y_hat = logit(np.dot(X,w))
     y_hat[y_hat >= 0.5] = 1
     y_hat[y_hat < 0.5] = -1
     return y_hat 

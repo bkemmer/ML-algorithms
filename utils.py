@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def acuracia(y_hat, y_test, show=True):
     """ Retorna a acurácia do modelo"""
@@ -14,7 +15,7 @@ def acuracia(y_hat, y_test, show=True):
     return acc
 
 def divide_dataset(X, y, fator=0.7, seed=42):
-    """[summary]
+    """Função para dividir o dataset entre o fator para treino e 1 - fator para teste.
 
     Arguments:
         X {matriz} -- atributos
@@ -119,3 +120,18 @@ def completar_com(X_train, X_test, func, cols=None):
         X_test[np.isnan(X_test[:,col]), col] = val
     return X_train, X_test
 
+def plot_erros(erros, output_fname, figsize=(15,15)):
+    """ Função para plotar os erros
+
+    Arguments:
+        erros {Array} -- Vetor com os erros a cada época
+        output_fname {string} -- path para salvar a imagem
+    """
+    fig, ax1 = plt.subplots(figsize=figsize)
+    ax1.plot(erros)
+    ax1.set_xlabel("Iterações")
+    ax1.set_ylabel("J(theta): Custo")
+    plt.title('Função de erro a cada iteração')
+    fig.savefig(output_fname)
+    plt.show()
+    

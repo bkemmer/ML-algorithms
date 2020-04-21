@@ -36,7 +36,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import acuracia, divide_dataset, z_score, min_max, completar_com
+from utils import acuracia, divide_dataset, z_score, min_max, completar_com, plot_erros
 from regressao_linear import regressao_linear, preditor_linear, plot_regularizacao
 
 from regressao_logistica import regressao_logistica, preditor_logistico
@@ -94,25 +94,32 @@ if __name__ == "__main__":
     print('Regressão linear min_max:')
     _ = acuracia(y_hat, y_test)
 
-    # # Utilizando a regressao logistica
-    # title = "Regressão logística:"
-    # print(title)
-    # w_log, erros = regressao_logistica(X_train, y_train, taxa_aprendizado=0.5, max_iteracoes=200)
-    # plt.plot(erros)
-    # plt.title(title + 'Erros')
-    # plt.show()
-    # y_hat_log = preditor_logistico(X_test, w_log)
-    # _ = acuracia(y_hat_log, y_test)
-    # plt.plot(erros)
+    # Utilizando a regressao logistica
+    title = "Regressão logística:"
+    print(title)
+    taxa_aprendizado = 0.1
+    w_log, erros = regressao_logistica(X_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
+    plot_erros(erros, output_fname='./imgs/hepatitis_erro_logistica_{}.png'.format(taxa_aprendizado), figsize=(10,5))
+    y_hat_log = preditor_logistico(X_test, w_log)
+    _ = acuracia(y_hat_log, y_test)
 
 
     # Normalizando com z_score a regressão logística
     X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    w_log, erros = regressao_logistica(X_z_score_train, y_train, taxa_aprendizado=0.5, max_iteracoes=1000)
-    plt.plot(erros)
-    plt.show()
+    taxa_aprendizado = 0.1
+    w_log, erros = regressao_logistica(X_z_score_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=2000)
+    plot_erros(erros, output_fname='./imgs/hepatitis_erro_logistica_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
     y_hat = preditor_logistico(X_z_score_test, w_log)
-    print('Regressão logística z_score:')
+    print('Regressão logistica z_score:')
+    _ = acuracia(y_hat, y_test)
+
+    # Normalizando com z_score a regressão logística
+    X_minmax_train, X_minmax_test = min_max(X_train, X_test)
+    taxa_aprendizado = 0.1
+    w_log, erros = regressao_logistica(X_minmax_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=2000)
+    plot_erros(erros, output_fname='./imgs/hepatitis_erro_logistica_{}_minmax.png'.format(taxa_aprendizado), figsize=(10,5))
+    y_hat = preditor_logistico(X_minmax_test, w_log)
+    print('Regressão logistica min_max:')
     _ = acuracia(y_hat, y_test)
 
     # # Com regularização

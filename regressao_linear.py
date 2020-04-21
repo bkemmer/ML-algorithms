@@ -70,7 +70,7 @@ def plot_regularizacao(X_train, y_train, X_test, y_test,
     ln1 = ax1.plot(lamdbas, acc_train, label="Treino", color='b')
     ln2 = ax1.plot(lamdbas, acc_test, label="Teste", color='g')
     ln3 = ax2.plot(lamdbas, w_means, label="Média dos pesos (w)", color='r')
-    ax1.set_xlabel('lambdas (fator de regularização')
+    ax1.set_xlabel('lambdas (fator de regularização)')
     ax1.set_ylabel('Acurácia')
     ax2.set_ylabel('Média dos pesos (w)')
     ax1.set_title('Regressão linear variando o fator de regularização')
