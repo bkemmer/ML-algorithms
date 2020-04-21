@@ -18,8 +18,9 @@ Atributos:
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import acuracia, divide_dataset, z_score, min_max
+from utils import acuracia, divide_dataset, z_score, min_max, plot_erros
 from regressao_linear import regressao_linear, preditor_linear, plot_regularizacao
+from regressao_logistica import regressao_logistica_multiclasse, preditor_logistico_multiclasse
 
 def obter_dataset_iris(input_path, dict_str):
     """ Função lê o dataset e retorna X, y
@@ -66,6 +67,24 @@ if __name__ == "__main__":
     X_min_max_train, X_min_max_test = min_max(X_train, X_test, cols=[0, 1, 2, 3])
     w = regressao_linear(X_min_max_train, y_train)
     y_hat = preditor_linear(X_min_max_test, w)
+    _ = acuracia(y_hat, y_test)
+
+    # Normalizando com z_score a regressão logística
+    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    taxa_aprendizado = 0.1
+    w_log = regressao_logistica_multiclasse(X_z_score_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
+    # plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
+    y_hat = preditor_logistico_multiclasse(X_z_score_test, w_log)
+    print('Regressão logistica z_score:')
+    _ = acuracia(y_hat, y_test)
+
+    # Normalizando com z_score a regressão logística
+    X_minmax_train, X_minmax_test = min_max(X_train, X_test)
+    taxa_aprendizado = 0.1
+    w_log = regressao_logistica_multiclasse(X_minmax_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
+    # plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}_minmax.png'.format(taxa_aprendizado), figsize=(10,5))
+    y_hat = preditor_logistico_multiclasse(X_minmax_test, w_log)
+    print('Regressão logistica z_score:')
     _ = acuracia(y_hat, y_test)
 
     # Com regularização
