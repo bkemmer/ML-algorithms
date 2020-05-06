@@ -23,7 +23,7 @@ def hessiana_X(x):
     """
     return np.array([[2, -2],[-2, 4]])
 
-def grad_descendente_passo_fixo(x, learning_rate=0.1, iter_max=1000, max_error=1e-2):
+def grad_descendente(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-2):
 
     J = []
     f_val = f_X(x)
@@ -32,8 +32,13 @@ def grad_descendente_passo_fixo(x, learning_rate=0.1, iter_max=1000, max_error=1
 
     for i in range(iter_max):
 
-        grad_x = gradF_X(x)
-        x -= learning_rate*grad_x
+        d = -gradF_X(x)
+
+        if taxa_aprendizado_fixa is None:
+            alpha = bissecao(x, d)
+        else:
+            alpha = taxa_aprendizado_fixa
+        x += alpha*d
 
         f_val = f_X(x)
         # if i % 2 == 0:
@@ -46,33 +51,7 @@ def grad_descendente_passo_fixo(x, learning_rate=0.1, iter_max=1000, max_error=1
             return x, J
     return x, J
 
-
-def grad_descendente_bissecao(x, iter_max=1000, max_error=1e-2):
-
-    J = []
-    f_val = f_X(x)
-    J.append(f_val)
-    print ("Valor inicial de F_X: %f" %(f_val))
-
-    for i in range(iter_max):
-
-        grad_x = gradF_X(x)
-        passo = bissecao(x, -grad_x)
-        x -= passo*grad_x
-
-        f_val = f_X(x)
-        # if i % 2 == 0:
-        J.append(f_val)
-        print ("Valor de F_X na iteração %i: %f" %(i, f_val))
-  
-        if np.abs(f_val) < max_error:
-            J.append(f_val)
-            print ("Valor de F_X na iteração final %i: %f" %(i, f_val))
-            return x, J
-    return x, J
-
-
-def grad_descendente_newton_passo_fixo(x, learning_rate=0.1, iter_max=1000, max_error=1e-2):
+def grad_descendente_newton(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-2):
 
     J = []
     f_val = f_X(x)
@@ -85,38 +64,14 @@ def grad_descendente_newton_passo_fixo(x, learning_rate=0.1, iter_max=1000, max_
         H_x = hessiana_X(x)
         
         d = -np.linalg.inv(H_x) @ grad_x
-        # passo = bissecao(x, d)
-        x += learning_rate*d
-
-        f_val = f_X(x)
-        # if i % 2 == 0:
-        J.append(f_val)
-        print ("Valor de F_X na iteração %i: %f" %(i, f_val))
-  
-        if np.abs(f_val) < max_error:
-            J.append(f_val)
-            print ("Valor de F_X na iteração final %i: %f" %(i, f_val))
-            return x, J
-    return x, J
-
-def grad_descendente_newton_bissecao(x, iter_max=1000, max_error=1e-2):
-
-    J = []
-    f_val = f_X(x)
-    J.append(f_val)
-    print ("Valor inicial de F_X: %f" %(f_val))
-
-    for i in range(iter_max):
-
-        grad_x = gradF_X(x)
-        H_x = hessiana_X(x)
         
-        d = -np.linalg.inv(H_x) @ grad_x
-        passo = bissecao(x, d)
-        x += passo*d
+        if taxa_aprendizado_fixa is None:
+            alpha = bissecao(x, d)
+        else:
+            alpha = taxa_aprendizado_fixa
+        x += alpha*d
 
         f_val = f_X(x)
-        # if i % 2 == 0:
         J.append(f_val)
         print ("Valor de F_X na iteração %i: %f" %(i, f_val))
   
@@ -160,8 +115,7 @@ def bissecao(x, direcao, alpha_superior=None, h_derivada_min=1e-3, max_error=1e-
             return alpha_medio
     return alpha_medio
 
-
-def gradiente_conjugado_passo_fixo(x0, n, learning_rate=0.1, iter_max=1000, max_error=1e-2):
+def gradiente_conjugado(x0, n, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-2):
     """
         Utilizando a aproximação Fletcher-Reeves (FR)
     """
@@ -169,31 +123,11 @@ def gradiente_conjugado_passo_fixo(x0, n, learning_rate=0.1, iter_max=1000, max_
     d = -gradF_X(x0)
     x = x0
     for i in range(iter_max):
-        x_proximo = x + learning_rate*d
-        fx = f_X(x_proximo)
-        J.append(fx)
-        if np.abs(fx) < max_error:
-            return x_proximo, J
-        g = -gradF_X(x)
-        g_proximo = -gradF_X(x_proximo)
-        if i % n != 0:
-            b = (g_proximo.T @ g_proximo) / (g.T @ g)
-            d = g + b*d
+        if taxa_aprendizado_fixa is None:
+            alpha = bissecao(x, d)
         else:
-            d = g
-        x = x_proximo
-    return x, J
-
-def gradiente_conjugado_bissecao(x0, n, iter_max=1000, max_error=1e-2):
-    """
-        Utilizando a aproximação Fletcher-Reeves (FR)
-    """
-    J = []
-    d = gradF_X(x0)
-    x = x0
-    for i in range(iter_max):
-        passo = bissecao(x, d)
-        x_proximo = x + passo*d
+            alpha = taxa_aprendizado_fixa
+        x_proximo = x + alpha*d
         fx = f_X(x_proximo)
         J.append(fx)
         if np.abs(fx) < max_error:
@@ -209,8 +143,9 @@ def gradiente_conjugado_bissecao(x0, n, iter_max=1000, max_error=1e-2):
     return x, J
 
 x = [1, 4]
+alpha=0.1
 
-x, J = grad_descendente_passo_fixo(x)
+x, J = grad_descendente(x, taxa_aprendizado_fixa=alpha)
 print("Gradiente com Passo Fixo:")
 print("X={}".format(x))
 print("J[-1]={:.2f} na iteração: {:d}\n".format(J[-1], len(J)))
@@ -219,13 +154,13 @@ plt.title('Convergência de F(X) - Gradiente Descendente com passo fixo')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_descendente_passo_fixo.png')
-# plt.show()
+plt.show()
 plt.clf()
 
 
 x = [1, 4]
 
-x, J = grad_descendente_bissecao(x)
+x, J = grad_descendente(x)
 print("Gradiente com Passo Variável:")
 print("X={}".format(x))
 print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
@@ -234,12 +169,12 @@ plt.title('Convergência de F(X) - Gradiente Descendente utilizando bisseção')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_descendente_passo_variavel.png')
-# plt.show()
+plt.show()
 plt.clf()
 
 x = [1, 4]
 
-x, J = grad_descendente_newton_passo_fixo(x)
+x, J = grad_descendente_newton(x, taxa_aprendizado_fixa=alpha)
 print("Gradiente com Passo Variável:")
 print("X={}".format(x))
 print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
@@ -248,12 +183,12 @@ plt.title('Convergência de F(X) - Gradiente Descendente utilizando método de n
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_descendente_newton.png')
-# plt.show()
+plt.show()
 plt.clf()
 
 x = [1, 4]
 
-x, J = grad_descendente_newton_bissecao(x)
+x, J = grad_descendente_newton(x)
 print("Gradiente com Passo Variável:")
 print("X={}".format(x))
 print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
@@ -262,12 +197,12 @@ plt.title('Convergência de F(X) - Gradiente Descendente utilizando método de n
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_descendente_newton_bissecao.png')
-# plt.show()
+plt.show()
 plt.clf()
 
 x = [1, 4]
 
-x, J = gradiente_conjugado_passo_fixo(x, 2)
+x, J = gradiente_conjugado(x, 2, taxa_aprendizado_fixa=alpha)
 print("Gradiente Conjugado com Passo Fixo:")
 print("X={}".format(x))
 print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
@@ -281,7 +216,7 @@ plt.clf()
 
 x = [1, 4]
 
-x, J = gradiente_conjugado_bissecao(x, 2)
+x, J = gradiente_conjugado(x, 2)
 print("Gradiente Conjugado com Passo Fixo:")
 print("X={}".format(x))
 print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
