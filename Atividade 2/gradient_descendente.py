@@ -23,7 +23,7 @@ def hessiana_X(x):
     """
     return np.array([[2, -2],[-2, 4]])
 
-def grad_descendente(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-2):
+def grad_descendente(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-3):
 
     J = []
     f_val = f_X(x)
@@ -51,7 +51,7 @@ def grad_descendente(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-
             return x, J
     return x, J
 
-def grad_descendente_newton(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-2):
+def grad_descendente_newton(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-3):
 
     J = []
     f_val = f_X(x)
@@ -115,7 +115,7 @@ def bissecao(x, direcao, alpha_superior=None, h_derivada_min=1e-3, max_error=1e-
             return alpha_medio
     return alpha_medio
 
-def gradiente_conjugado(x0, n, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-2):
+def gradiente_conjugado(x0, n, taxa_aprendizado_fixa=None, metodo=1, iter_max=1000, max_error=1e-3):
     """
         Utilizando a aproximação Fletcher-Reeves (FR)
     """
@@ -135,7 +135,13 @@ def gradiente_conjugado(x0, n, taxa_aprendizado_fixa=None, iter_max=1000, max_er
         g = -gradF_X(x)
         g_proximo = -gradF_X(x_proximo)
         if i % n != 0:
-            b = (g_proximo.T @ g_proximo) / (g.T @ g)
+            if metodo == 1:
+                #será utilizado o método Fletcher-Reeves
+                b = (g_proximo.T @ g_proximo) / (g.T @ g)
+            else:
+                # caso contrário será utilizado o método Polak-Ribiére
+                b = (g_proximo.T @ (g_proximo - g)) / (g.T @ g)
+
             d = g + b*d
         else:
             d = g
@@ -146,11 +152,11 @@ x = [1, 4]
 alpha=0.1
 
 x, J = grad_descendente(x, taxa_aprendizado_fixa=alpha)
-print("Gradiente com Passo Fixo:")
+print("Gradiente com taxa de aprendizado fixa:")
 print("X={}".format(x))
 print("J[-1]={:.2f} na iteração: {:d}\n".format(J[-1], len(J)))
 plt.plot(J)
-plt.title('Convergência de F(X) - Gradiente Descendente com passo fixo')
+plt.title('Convergência de F(X) - Gradiente Descendente com taxa de aprendizado fixa')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_descendente_passo_fixo.png')
@@ -179,7 +185,7 @@ print("Gradiente com Passo Variável:")
 print("X={}".format(x))
 print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
 plt.plot(J)
-plt.title('Convergência de F(X) - Gradiente Descendente utilizando método de newton (passo fixo)')
+plt.title('Convergência de F(X) - Gradiente Descendente utilizando método de newton (taxa de aprendizado fixa)')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_descendente_newton.png')
@@ -203,11 +209,11 @@ plt.clf()
 x = [1, 4]
 
 x, J = gradiente_conjugado(x, 2, taxa_aprendizado_fixa=alpha)
-print("Gradiente Conjugado com Passo Fixo:")
+print("Gradiente Conjugado com taxa de aprendizado fixa:")
 print("X={}".format(x))
 print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
 plt.plot(J)
-plt.title('Convergência de F(X) - Gradiente Conjugado passo fixo')
+plt.title('Convergência de F(X) - Gradiente Conjugado taxa de aprendizado fixa')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_conjugado_fixo.png')
@@ -217,13 +223,27 @@ plt.clf()
 x = [1, 4]
 
 x, J = gradiente_conjugado(x, 2)
-print("Gradiente Conjugado com Passo Fixo:")
+print("Gradiente Conjugado meodo bisseção:")
 print("X={}".format(x))
 print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
 plt.plot(J)
-plt.title('Convergência de F(X) - Gradiente Conjugado (bisseção)')
+plt.title('Convergência de F(X) - Gradiente Conjugado (bisseção) - Fletcher-Reeves')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
-plt.savefig('./grad_conjugado_bissecao.png')
+plt.savefig('./grad_conjugado_bissecao_FR.png')
+plt.show()
+plt.clf()
+
+x = [1, 4]
+x, J = gradiente_conjugado(x, 2, metodo=2)
+print("Gradiente Conjugado Bisseção:")
+print("X={}".format(x))
+print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
+plt.plot(J)
+plt.axhline(y=0, color='black', linestyle='dashed')
+plt.title('Convergência de F(X) - Gradiente Conjugado (bisseção) - Polak-Ribiére')
+plt.xlabel('Iterações')
+plt.ylabel('F(X)')
+plt.savefig('./grad_conjugado_bissecao_PR.png')
 plt.show()
 plt.clf()
