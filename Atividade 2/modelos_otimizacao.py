@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 def f_X(x):
     """ f(x1, x2) = x1^2 + 2*x2^2 -2X1X2-2X2
     """
-    return np.power(x[0],2) + 2*np.power(x[1],2) - 2*x[0]*x[1] - x[1] 
+    return np.power(x[0],2) + 2*np.power(x[1],2) - 2*x[0]*x[1] - 2*x[1] 
 
 def gradF_X(x):
     """ Retorna o gradiente da função f_x
@@ -25,7 +25,9 @@ def hessiana_X(x):
 
 def grad_descendente(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-3):
 
+
     J = []
+    normas = []
     f_val = f_X(x)
     J.append(f_val)
     print ("Valor inicial de F_X: %f" %(f_val))
@@ -34,8 +36,14 @@ def grad_descendente(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-
 
         d = -gradF_X(x)
 
+        norm = np.abs(np.linalg.norm(d))
+        normas.append(norm)
+        if  norm < max_error:
+            print ("Valor de F_X na iteração final %i: %f" %(i, f_val))
+            return x, J, normas, i
+
         if taxa_aprendizado_fixa is None:
-            alpha = bissecao(x, d)
+            alpha = bissecao(x, d, gradF_X=gradF_X)
         else:
             alpha = taxa_aprendizado_fixa
         x += alpha*d
@@ -44,16 +52,12 @@ def grad_descendente(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-
         # if i % 2 == 0:
         J.append(f_val)
         print ("Valor de F_X na iteração %i: %f" %(i, f_val))
-  
-        if np.abs(f_val) < max_error:
-            J.append(f_val)
-            print ("Valor de F_X na iteração final %i: %f" %(i, f_val))
-            return x, J
-    return x, J
+    return x, J, normas, i
 
 def grad_descendente_newton(x, taxa_aprendizado_fixa=None, iter_max=1000, max_error=1e-3):
 
     J = []
+    normas = []
     f_val = f_X(x)
     J.append(f_val)
     print ("Valor inicial de F_X: %f" %(f_val))
@@ -61,12 +65,19 @@ def grad_descendente_newton(x, taxa_aprendizado_fixa=None, iter_max=1000, max_er
     for i in range(iter_max):
 
         grad_x = gradF_X(x)
+      
+        norm = np.abs(np.linalg.norm(grad_x))
+        normas.append(norm)
+        if  norm < max_error:         
+            print ("Valor de F_X na iteração final %i: %f" %(i, f_val))
+            return x, J, normas, i
+
         H_x = hessiana_X(x)
         
         d = -np.linalg.inv(H_x) @ grad_x
         
         if taxa_aprendizado_fixa is None:
-            alpha = bissecao(x, d)
+            alpha = bissecao(x, d, gradF_X=gradF_X)
         else:
             alpha = taxa_aprendizado_fixa
         x += alpha*d
@@ -75,13 +86,9 @@ def grad_descendente_newton(x, taxa_aprendizado_fixa=None, iter_max=1000, max_er
         J.append(f_val)
         print ("Valor de F_X na iteração %i: %f" %(i, f_val))
   
-        if np.abs(f_val) < max_error:
-            J.append(f_val)
-            print ("Valor de F_X na iteração final %i: %f" %(i, f_val))
-            return x, J
-    return x, J
+    return x, J, normas, i
 
-def bissecao(x, direcao, alpha_superior=None, h_derivada_min=1e-3, max_error=1e-3):
+def bissecao(x, direcao, gradF_X, alpha_superior=None, h_derivada_min=1e-3, max_error=1e-3):
 
     alpha_inferior = 0
     if alpha_superior is None:
@@ -102,7 +109,7 @@ def bissecao(x, direcao, alpha_superior=None, h_derivada_min=1e-3, max_error=1e-
 
     for i in range(iter_maximas + 1):
         alpha_medio = (alpha_inferior + alpha_superior)/2
-        if np.abs(h_derivada) < h_derivada_min:
+        if np.abs(np.linalg.norm(h_derivada)) < h_derivada_min:
             return alpha_medio
         xn = x + alpha_medio*direcao
         grad_x = gradF_X(xn)
@@ -124,15 +131,20 @@ def gradiente_conjugado(x0, n, taxa_aprendizado_fixa=None, metodo=1, iter_max=10
     x = x0
     for i in range(iter_max):
         if taxa_aprendizado_fixa is None:
-            alpha = bissecao(x, d)
+            alpha = bissecao(x, d, gradF_X=gradF_X)
         else:
             alpha = taxa_aprendizado_fixa
         x_proximo = x + alpha*d
         fx = f_X(x_proximo)
+        
         J.append(fx)
-        if np.abs(fx) < max_error:
-            return x_proximo, J
+
         g = -gradF_X(x)
+        norm = np.abs(np.linalg.norm(g))
+        normas.append(norm)
+        if  norm < max_error:
+            return x_proximo, J, normas, i
+
         g_proximo = -gradF_X(x_proximo)
         if i % n != 0:
             if metodo == 1:
@@ -146,104 +158,158 @@ def gradiente_conjugado(x0, n, taxa_aprendizado_fixa=None, metodo=1, iter_max=10
         else:
             d = g
         x = x_proximo
-    return x, J
+    return x, J, normas, i
+
+
+def Levenberf_Marquardt(x, mu=0.0001, iter_max=1000, max_error=1e-3):
+    def r_x(x):
+        return np.array([x[0]-x[1], -x[0]+2*x[1]-1])
+    grad_r = np.array([[1, -1], [0, 1]])
+    
+    J = []
+    normas = []
+
+    for i in range(iter_max):
+
+        a = np.linalg.inv(grad_r.T @ grad_r + mu)
+        d = grad_r.T @ r_x(x)
+        x -= a @ d
+
+        norm = np.abs(np.linalg.norm(d))
+        normas.append(norm)
+        J.append(f_X(x))
+        if norm < max_error:
+            return x, J, normas, i
+    
+    return x, J, normas, i
+
+
 
 x = [1, 4]
 alpha=0.1
+show = False
 
-x, J = grad_descendente(x, taxa_aprendizado_fixa=alpha)
+x, J, normas, i = grad_descendente(x, taxa_aprendizado_fixa=alpha)
 print("Gradiente com taxa de aprendizado fixa:")
 print("X={}".format(x))
-print("J[-1]={:.2f} na iteração: {:d}\n".format(J[-1], len(J)))
+print("normas[-1]={:.2f} na iteração: {:d}\n".format(normas[-1],i))
 plt.plot(J)
-plt.title('Convergência de F(X) - Gradiente Descendente com taxa de aprendizado fixa')
+plt.axhline(y=-1, color='black', linestyle='dashed', alpha=0.3)
+plt.title('Convergência de F(X) - Gradiente Descendente \ncom taxa de aprendizado fixa')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_descendente_passo_fixo.png')
-plt.show()
+if show: 
+    plt.show()
 plt.clf()
 
 
 x = [1, 4]
 
-x, J = grad_descendente(x)
+x, J, normas, i = grad_descendente(x)
 print("Gradiente com Passo Variável:")
 print("X={}".format(x))
-print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
+print("J[-1]={:.2f} na iteração: {:d}".format(J[-1],i))
 plt.plot(J)
+plt.axhline(y=-1, color='black', linestyle='dashed', alpha=0.3)
 plt.title('Convergência de F(X) - Gradiente Descendente utilizando bisseção')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_descendente_passo_variavel.png')
-plt.show()
+if show: 
+    plt.show()
 plt.clf()
 
 x = [1, 4]
 
-x, J = grad_descendente_newton(x, taxa_aprendizado_fixa=alpha)
+x, J, normas, i = grad_descendente_newton(x, taxa_aprendizado_fixa=alpha)
 print("Gradiente com Passo Variável:")
 print("X={}".format(x))
-print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
+print("J[-1]={:.2f} na iteração: {:d}".format(J[-1],i))
 plt.plot(J)
-plt.title('Convergência de F(X) - Gradiente Descendente utilizando método de newton (taxa de aprendizado fixa)')
+plt.axhline(y=-1, color='black', linestyle='dashed', alpha=0.3)
+plt.title('Convergência de F(X) - Gradiente Descendente utilizando \nmétodo de newton (taxa de aprendizado fixa)')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_descendente_newton.png')
-plt.show()
+if show: 
+    plt.show()
 plt.clf()
 
 x = [1, 4]
 
-x, J = grad_descendente_newton(x)
+x, J, normas, i = grad_descendente_newton(x)
 print("Gradiente com Passo Variável:")
 print("X={}".format(x))
-print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
+print("J[-1]={:.2f} na iteração: {:d}".format(J[-1],i))
 plt.plot(J)
-plt.title('Convergência de F(X) - Gradiente Descendente utilizando método de newton (bisseção)')
+plt.axhline(y=-1, color='black', linestyle='dashed', alpha=0.3)
+plt.title('Convergência de F(X) - Gradiente Descendente \nutilizando método de newton (bisseção)')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_descendente_newton_bissecao.png')
-plt.show()
+if show: 
+    plt.show()
 plt.clf()
 
 x = [1, 4]
 
-x, J = gradiente_conjugado(x, 2, taxa_aprendizado_fixa=alpha)
+x, J, normas, i = gradiente_conjugado(x, 2, taxa_aprendizado_fixa=alpha)
 print("Gradiente Conjugado com taxa de aprendizado fixa:")
 print("X={}".format(x))
-print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
+print("J[-1]={:.2f} na iteração: {:d}".format(J[-1],i))
 plt.plot(J)
+plt.axhline(y=-1, color='black', linestyle='dashed', alpha=0.3)
 plt.title('Convergência de F(X) - Gradiente Conjugado taxa de aprendizado fixa')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_conjugado_fixo.png')
-plt.show()
+if show: 
+    plt.show()
 plt.clf()
 
 x = [1, 4]
 
-x, J = gradiente_conjugado(x, 2)
+x, J, normas, i = gradiente_conjugado(x, 2)
 print("Gradiente Conjugado meodo bisseção:")
 print("X={}".format(x))
-print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
+print("J[-1]={:.2f} na iteração: {:d}".format(J[-1],i))
 plt.plot(J)
-plt.title('Convergência de F(X) - Gradiente Conjugado (bisseção) - Fletcher-Reeves')
+plt.axhline(y=-1, color='black', linestyle='dashed', alpha=0.3)
+plt.title('Convergência de F(X) - Gradiente Conjugado \n(bisseção) - Fletcher-Reeves')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_conjugado_bissecao_FR.png')
-plt.show()
+if show: 
+    plt.show()
 plt.clf()
 
 x = [1, 4]
-x, J = gradiente_conjugado(x, 2, metodo=2)
+x, J, normas, i = gradiente_conjugado(x, 2, metodo=2)
 print("Gradiente Conjugado Bisseção:")
 print("X={}".format(x))
-print("J[-1]={:.2f} na iteração: {:d}".format(J[-1], len(J)))
+print("J[-1]={:.2f} na iteração: {:d}".format(J[-1],i))
 plt.plot(J)
-plt.axhline(y=0, color='black', linestyle='dashed')
-plt.title('Convergência de F(X) - Gradiente Conjugado (bisseção) - Polak-Ribiére')
+plt.axhline(y=-1, color='black', linestyle='dashed', alpha=0.3)
+plt.title('Convergência de F(X) - Gradiente Conjugado \n(bisseção) - Polak-Ribiére')
 plt.xlabel('Iterações')
 plt.ylabel('F(X)')
 plt.savefig('./grad_conjugado_bissecao_PR.png')
-plt.show()
+if show: 
+    plt.show()
+plt.clf()
+
+x = [1, 4]
+x, J, normas, i = Levenberf_Marquardt(x)
+print("Levenberf Marquardt:")
+print("X={}".format(x))
+print("J[-1]={:.2f} na iteração: {:d}".format(J[-1],i))
+plt.plot(J)
+plt.axhline(y=-1, color='black', linestyle='dashed', alpha=0.3)
+plt.title('Convergência de F(X) - Levenberf Marquardt')
+plt.xlabel('Iterações')
+plt.ylabel('F(X)')
+plt.savefig('./Levenberf_Marquardt.png')
+if show: 
+    plt.show()
 plt.clf()
