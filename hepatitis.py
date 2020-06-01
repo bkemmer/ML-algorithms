@@ -36,10 +36,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import acuracia, divide_dataset, z_score, min_max, completar_com, plot_erros
+from utils import acuracia, divide_dataset, z_score, min_max, completar_com, plot_erros, Ymulticlasse
 from regressao_linear import regressao_linear, preditor_linear, plot_regularizacao
 
 from regressao_logistica import regressao_logistica, preditor_logistico
+
+from RedeNeuralSoftmax import redeNeuralSoftmax, preditorNeuralSoftmax
 
 def obter_dataset_hepatitis(input_path):
     """ Função lê o dataset e retorna X, y
@@ -122,16 +124,26 @@ if __name__ == "__main__":
     print('Regressão logistica min_max:')
     _ = acuracia(y_hat, y_test)
 
-    # # Com regularização
-    # Variando 0<=lambda<1 
-    plot_regularizacao(X_train, y_train, X_test, y_test,
-                        output_file_name="./imgs/hepatitis_acuracia_regressor_linear.png")
-    # Variando 0<=lambda<10
-    plot_regularizacao(X_train, y_train, X_test, y_test, 
-                        limits_min=0, limits_max=1000, 
-                        output_file_name="./imgs/hepatitis_acuracia_regressor_linear10.png")
+    # Normalizando com z_score a Rede Neural com Softmax
+    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    y_train_multi, y_test_multi = Ymulticlasse(y_train, y_test)
+    taxa_aprendizado = 0.5
+    w_soft, erros = redeNeuralSoftmax(X_z_score_train, y_train_multi, taxa_aprendizado=taxa_aprendizado, max_iteracoes=5000, plot=False)
+    plot_erros(erros, output_fname='./imgs/hepatitis_erro_redeSoftMax_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
+    y_hat = preditorNeuralSoftmax(X_z_score_test, w_soft)
+    print('Rede Neural Softmax z_score:')
+    _ = acuracia(y_hat, y_test_multi)
 
-    # Variando 0<=lambda<100
-    plot_regularizacao(X_train, y_train, X_test, y_test, 
-                        limits_min=0, limits_max=10000, 
-                        output_file_name="./imgs/hepatitis_acuracia_regressor_linear100.png")
+    # # # Com regularização
+    # # Variando 0<=lambda<1 
+    # plot_regularizacao(X_train, y_train, X_test, y_test,
+    #                     output_file_name="./imgs/hepatitis_acuracia_regressor_linear.png")
+    # # Variando 0<=lambda<10
+    # plot_regularizacao(X_train, y_train, X_test, y_test, 
+    #                     limits_min=0, limits_max=1000, 
+    #                     output_file_name="./imgs/hepatitis_acuracia_regressor_linear10.png")
+
+    # # Variando 0<=lambda<100
+    # plot_regularizacao(X_train, y_train, X_test, y_test, 
+    #                     limits_min=0, limits_max=10000, 
+    #                     output_file_name="./imgs/hepatitis_acuracia_regressor_linear100.png")

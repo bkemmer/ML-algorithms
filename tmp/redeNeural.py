@@ -26,6 +26,7 @@ def sigmoid(x):
 def sigmoidDerivada(x):
     # input x: sigmoid
     return x*(1 - x)
+    
 # TODO:
 # def softmax_estavel(x, axis):
 #     # \text{Softmax}(x_{i}) = \frac{\exp(x_i)}{\sum_j \exp(x_j)}
@@ -62,7 +63,7 @@ def inicializacao_pesos(nd, nc=1):
     return np.random.randn(nd, nc)*0.01
 
 
-def redeNeuralSigmoid(X, y, taxa_aprendizado=1, max_iteracoes=1000, custo_min=1e-5, plot=True):
+def redeNeuralSigmoid(X, y, taxa_aprendizado=0.1, max_iteracoes=5000, custo_min=1e-5, plot=True):
     # número de dimensões + 1 (bias)
     nd = X.shape[1]+1
     W = inicializacao_pesos(nd, 1)
@@ -99,13 +100,14 @@ def redeNeuralSigmoid(X, y, taxa_aprendizado=1, max_iteracoes=1000, custo_min=1e
 
     return W, J
 
-def redeNeuralSoftmax(X, y, taxa_aprendizado=1, max_iteracoes=1000, custo_min=1e-5, plot=True):
+def redeNeuralSoftmax(X, y, taxa_aprendizado=0.1, max_iteracoes=5000, custo_min=1e-5, plot=True):
     # número de dimensões + 1 (bias)
     nd = X.shape[1]+1
     if len(y.shape) < 2:
         nc = 1
     else:
         nc = y.shape[1]
+
     W = inicializacao_pesos(nd, nc)
 
     # Aumentando X para conter w0 aka b
@@ -157,9 +159,17 @@ y_and = np.array([0, 0, 0, 1])
 
 # W, J = redeNeuralSigmoid(X, y_and)
 # plt.plot(J)
-# plt.title('J (Entropia Cruzada com sigmoid)')
+# plt.title('J (Entropia Cruzada com sigmoid) - função AND\nt=0.1 5k epocas')
+# plt.ylabel('J')
+# plt.xlabel('Épocas')
+# plt.savefig('./imgs/atividade6_entropia_cruzada_sigmoid.png')
 # plt.show()
 
 # W, J = redeNeuralSoftmax(X, y)
 # plt.plot(J)
+# plt.title('J (Entropia Cruzada com softmax) - função NOR e OR\nt=0.1 5k epocas')
+# plt.ylabel('J')
+# plt.xlabel('Épocas')
+# plt.savefig('./imgs/atividade6_entropia_cruzada_softmax.png')
+# plt.show()
 # plt.show()

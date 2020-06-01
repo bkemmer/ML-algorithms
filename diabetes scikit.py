@@ -27,6 +27,9 @@ from regressao_linear import regressao_linear, preditor_linear, plot_regularizac
 from regressao_logistica import regressao_logistica, preditor_logistico
 
 from sklearn.linear_model import LogisticRegression
+from sklearn import svm
+
+from RedeNeuralSoftmax import redeNeuralSoftmax, preditorNeuralSoftmax
 
 # def obter_dataset_diabetes(input_path):
 #     """ Função lê o dataset e retorna X, y
@@ -83,23 +86,32 @@ if __name__ == "__main__":
     X_train, y_train, X_test, y_test = obter_dataset_diabetesv2(input_path_train, input_path_test)
     print('Dimensão do treino e teste:', np.shape(X_train), np.shape(X_test))
 
-    # Normalizando com z_score
-    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    w = regressao_linear(X_z_score_train, y_train)
-    y_hat = preditor_linear(w, X_z_score_test)
-    print('Regressão linear z_score:')
-    _ = acuracia(y_hat, y_test)
+    # # Normalizando com z_score
+    # X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    # w = regressao_linear(X_z_score_train, y_train)
+    # y_hat = preditor_linear(w, X_z_score_test)
+    # print('Regressão linear z_score:')
+    # _ = acuracia(y_hat, y_test)
 
-    # Normalizando com z_score a regressão logística
-    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    w_log, erros = regressao_logistica(X_z_score_train, y_train, taxa_aprendizado=0.5, max_iteracoes=1000)
-    plt.plot(erros)
-    plt.show()
-    y_hat = preditor_logistico(X_z_score_test, w_log)
-    print('Regressão logistica z_score:')
-    _ = acuracia(y_hat, y_test)
+    # # Normalizando com z_score a regressão logística
+    # X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    # w_log, erros = regressao_logistica(X_z_score_train, y_train, taxa_aprendizado=0.5, max_iteracoes=1000)
+    # plt.plot(erros)
+    # plt.show()
+    # y_hat = preditor_logistico(X_z_score_test, w_log)
+    # print('Regressão logistica z_score:')
+    # _ = acuracia(y_hat, y_test)
 
-    clf = LogisticRegression(random_state=42).fit(X_z_score_train, y_train)
+    # clf = LogisticRegression(random_state=42).fit(X_z_score_train, y_train)
+    # y_scikit = clf.predict(X_z_score_test)
+
+    # _ = acuracia(y_scikit, y_test)
+    
+    # # Normalizando com z_score
+    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    clf = svm.SVC(C=1, kernel='poly', degree=2)
+    clf.fit(X_z_score_train, y_train)
+
     y_scikit = clf.predict(X_z_score_test)
 
     _ = acuracia(y_scikit, y_test)

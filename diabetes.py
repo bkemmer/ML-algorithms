@@ -21,10 +21,14 @@ As variávies independentes incluem: número de gravidezes que o paciente teve, 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import acuracia, divide_dataset, z_score, min_max, plot_erros
+from utils import acuracia, divide_dataset, z_score, min_max, plot_erros, Ymulticlasse
 from regressao_linear import regressao_linear, preditor_linear, plot_regularizacao
 
 from regressao_logistica import regressao_logistica, preditor_logistico
+
+from RedeNeuralSoftmax import redeNeuralSoftmax, preditorNeuralSoftmax
+
+from twsvm import twsvm, preditor_twsvm, kernel_pol
 
 # def obter_dataset_diabetes(input_path):
 #     """ Função lê o dataset e retorna X, y
@@ -65,7 +69,7 @@ def obter_dataset_diabetesv2(input_path_train, input_path_test):
     y_test[y_test == 0.] = -1
     y_test[y_test == 1.] = 1
 
-    return X_train,y_train, X_test, y_test
+    return X_train, y_train, X_test, y_test
 
 if __name__ == "__main__":
 
@@ -81,62 +85,93 @@ if __name__ == "__main__":
     X_train, y_train, X_test, y_test = obter_dataset_diabetesv2(input_path_train, input_path_test)
     print('Dimensão do treino e teste:', np.shape(X_train), np.shape(X_test))
 
-    w = regressao_linear(X_train, y_train)
-    print('dimensão de w: ', np.shape(w))
-    y_hat = preditor_linear(X_test, w)
-    print('Regressão linear s/normalização:')
-    _ = acuracia(y_hat, y_test)
+    # w = regressao_linear(X_train, y_train)
+    # print('dimensão de w: ', np.shape(w))
+    # y_hat = preditor_linear(X_test, w)
+    # print('Regressão linear s/normalização:')
+    # _ = acuracia(y_hat, y_test)
 
-    # Normalizando com z_score
+    # # Normalizando com z_score
+    # X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    # w = regressao_linear(X_z_score_train, y_train)
+    # y_hat = preditor_linear(X_z_score_test, w)
+    # print('Regressão linear z_score:')
+    # _ = acuracia(y_hat, y_test)
+
+    # # Normalizando com min max
+    # X_min_max_train, X_min_max_test = min_max(X_train, X_test)
+    # w = regressao_linear(X_train, y_train)
+    # y_hat = preditor_linear(X_min_max_test, w)
+    # print('Regressão linear min_max:')
+    # _ = acuracia(y_hat, y_test)
+
+    # # Utilizando a regressao logistica
+    # title = "Regressão logística:"
+    # print(title)
+    # taxa_aprendizado = 0.5
+    # w_log, erros = regressao_logistica(X_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
+    # plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}.png'.format(taxa_aprendizado), figsize=(10,5))
+    # y_hat_log = preditor_logistico(X_test, w_log)
+    # _ = acuracia(y_hat_log, y_test)
+
+
+    # # Normalizando com z_score a regressão logística
+    # X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    # taxa_aprendizado = 0.5
+    # w_log, erros = regressao_logistica(X_z_score_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
+    # plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
+    # y_hat = preditor_logistico(X_z_score_test, w_log)
+    # print('Regressão logistica z_score:')
+    # _ = acuracia(y_hat, y_test)
+
+    # # Normalizando com z_score a regressão logística
+    # X_minmax_train, X_minmax_test = min_max(X_train, X_test)
+    # taxa_aprendizado = 0.5
+    # w_log, erros = regressao_logistica(X_minmax_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
+    # plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}_minmax.png'.format(taxa_aprendizado), figsize=(10,5))
+    # y_hat = preditor_logistico(X_minmax_test, w_log)
+    # print('Regressão logistica z_score:')
+    # _ = acuracia(y_hat, y_test)
+
+    # Normalizando com z_score TW-SVM
     X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    w = regressao_linear(X_z_score_train, y_train)
-    y_hat = preditor_linear(X_z_score_test, w)
-    print('Regressão linear z_score:')
+    z_1, z_2 = twsvm(X_z_score_train, y_train, C_1=1, C_2=1)
+    y_hat = preditor_twsvm(X_z_score_test, X_z_score_train, y_train, kernel_pol, z_1, z_2, y_test)
+    # plot_erros(erros, output_fname='./imgs/diabetes_erro_svm_{}_zscore.png'.format(), figsize=(10,5))
+    print('TW-SVM z_score:')
     _ = acuracia(y_hat, y_test)
 
-    # Normalizando com min max
-    X_min_max_train, X_min_max_test = min_max(X_train, X_test)
-    w = regressao_linear(X_train, y_train)
-    y_hat = preditor_linear(X_min_max_test, w)
-    print('Regressão linear min_max:')
-    _ = acuracia(y_hat, y_test)
-
-    # Utilizando a regressao logistica
-    title = "Regressão logística:"
-    print(title)
-    taxa_aprendizado = 0.5
-    w_log, erros = regressao_logistica(X_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
-    plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}.png'.format(taxa_aprendizado), figsize=(10,5))
-    y_hat_log = preditor_logistico(X_test, w_log)
-    _ = acuracia(y_hat_log, y_test)
-
-
-    # Normalizando com z_score a regressão logística
-    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    taxa_aprendizado = 0.5
-    w_log, erros = regressao_logistica(X_z_score_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
-    plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
-    y_hat = preditor_logistico(X_z_score_test, w_log)
-    print('Regressão logistica z_score:')
-    _ = acuracia(y_hat, y_test)
-
-    # Normalizando com z_score a regressão logística
-    X_minmax_train, X_minmax_test = min_max(X_train, X_test)
-    taxa_aprendizado = 0.5
-    w_log, erros = regressao_logistica(X_minmax_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
-    plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}_minmax.png'.format(taxa_aprendizado), figsize=(10,5))
-    y_hat = preditor_logistico(X_minmax_test, w_log)
-    print('Regressão logistica z_score:')
-    _ = acuracia(y_hat, y_test)
+    # # Normalizando com z_score a Rede Neural com Softmax
+    # X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    # y_train_multi, y_test_multi = Ymulticlasse(y_train, y_test)
+    # taxa_aprendizado = 0.5
+    # w_soft, erros = redeNeuralSoftmax(X_z_score_train, y_train_multi, taxa_aprendizado=taxa_aprendizado, max_iteracoes=5000, plot=False)
+    # plot_erros(erros, output_fname='./imgs/diabetes_erro_redeSoftMax_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
+    # y_hat = preditorNeuralSoftmax(X_z_score_test, w_soft)
+    # print('Rede Neural Softmax z_score:')
+    # _ = acuracia(y_hat, y_test_multi)
     
-    # # Com regularização
-    # Variando 0<=lambda<1 
-    plot_regularizacao(X_train, y_train, X_test, y_test,
-                        output_file_name="./imgs/diabetes_acuracia_regressor_linear.png")
-    # Variando 0<=lambda<10
-    plot_regularizacao(X_train, y_train, X_test, y_test, 
-                        limits_min=0, limits_max=1000, 
-                        output_file_name="./imgs/diabetes_acuracia_regressor_linear10.png")
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # # # Com regularização
+    # # Variando 0<=lambda<1 
+    # plot_regularizacao(X_train, y_train, X_test, y_test,
+    #                     output_file_name="./imgs/diabetes_acuracia_regressor_linear.png")
+    # # Variando 0<=lambda<10
+    # plot_regularizacao(X_train, y_train, X_test, y_test, 
+    #                     limits_min=0, limits_max=1000, 
+    #                     output_file_name="./imgs/diabetes_acuracia_regressor_linear10.png")
 
     # # Variando 0<=lambda<100
     # plot_regularizacao(X_train, y_train, X_test, y_test, 

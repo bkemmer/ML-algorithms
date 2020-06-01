@@ -46,6 +46,8 @@ if __name__ == "__main__":
     print('Dimensão do treino e teste:', np.shape(X_train), np.shape(X_test))
 
     X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    N = X_z_score_train.shape[0]
+    X_z_score_train = np.concatenate([X_z_score_train, np.ones((N, 1))], axis=1)
 
     feature_set = X_z_score_train
     one_hot_labels = y_train
@@ -53,15 +55,13 @@ if __name__ == "__main__":
     instances = feature_set.shape[0]
     attributes = feature_set.shape[1]
     output_labels = 3
-
+    # np.random.seed(42)
     wo = np.random.rand(attributes,output_labels)
     # bo = np.random.randn(output_labels)
     lr = 10e-4
 
     error_cost = []
-    N = X.shape[0]
-    X = np.concatenate([X, np.ones((N, 1))], axis=1)
-    J = []
+   
     for epoch in range(5000):
     ############# feedforward
 
@@ -100,8 +100,7 @@ if __name__ == "__main__":
 
         if epoch % 200 == 0:
             loss = np.sum(-one_hot_labels * np.log(ao))
-            J.append(loss)
             print('Loss function value: ', loss)
             error_cost.append(loss)
-    plt.plot(J)
+    plt.plot(error_cost)
     plt.show()

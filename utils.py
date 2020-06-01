@@ -135,3 +135,20 @@ def plot_erros(erros, output_fname, figsize=(15,15)):
     fig.savefig(output_fname)
     plt.show()
     
+def Ymulticlasse(y_train, y_test):
+    """ Função recebe dois vetores binários e transforma eles em one-hot-encoding
+
+    Arguments:
+        y_train {np.array} -- vetor de classes de treino
+        y_test {np.array} -- vetor de classes de treino
+
+    Returns:
+        (np.array, np.array) -- vetor de classes de treino e teste
+    """
+    classes = sorted(set(y_train).union(set(y_test)))
+    y_train_multi = np.zeros((len(y_train), len(classes)))
+    y_test_multi = np.zeros((len(y_test), len(classes)))
+    for i, classe in enumerate(classes):
+        y_train_multi[:, i] = np.where(y_train == classe, 1, 0)
+        y_test_multi[:, i] = np.where(y_test == classe, 1, 0)
+    return y_train_multi, y_test_multi
