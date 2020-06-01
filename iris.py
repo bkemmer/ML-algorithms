@@ -36,16 +36,15 @@ def obter_dataset_iris(input_path, dict_str):
     y = np.loadtxt(input_path, delimiter=',', dtype=None, usecols=(4), encoding='UTF', converters={4:dict_str.get})
     return X,y
 
-if __name__ == "__main__":
-
-    # Dataset Iris
+def main():
+        # Dataset Iris
     # Sem normalização
     input_path='./data/iris/iris.data'
     d={"Iris-setosa":[1,0,0], "Iris-versicolor":[0,1,0],"Iris-virginica":[0,0,1]}
 
     X, y = obter_dataset_iris(input_path, d)
-    print(X[0:5, :])
-    print(y[0:5])
+    # print(X[0:5, :])
+    # print(y[0:5])
     print('Dimensão de X: ', np.shape(X))
     print('Dimensão de : ', np.shape(y))
 
@@ -56,18 +55,21 @@ if __name__ == "__main__":
     print('dimensão de w: ', np.shape(w))
 
     y_hat = preditor_linear(X_test, w)
+    print('\nRegressão linear s/normalização:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score
     X_z_score_train, X_z_score_test = z_score(X_train, X_test, cols=[0, 1, 2, 3])
     w = regressao_linear(X_z_score_train, y_train)
     y_hat = preditor_linear(X_z_score_test, w)
+    print('\nRegressão linear z_score:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com min max
     X_min_max_train, X_min_max_test = min_max(X_train, X_test, cols=[0, 1, 2, 3])
     w = regressao_linear(X_min_max_train, y_train)
     y_hat = preditor_linear(X_min_max_test, w)
+    print('\nRegressão linear min_max:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score a regressão logística
@@ -76,28 +78,31 @@ if __name__ == "__main__":
     w_log = regressao_logistica_multiclasse(X_z_score_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
     # plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
     y_hat = preditor_logistico_multiclasse(X_z_score_test, w_log)
-    print('Regressão logistica z_score:')
+    print('\nRegressão logistica z_score:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score a regressão logística
+    print('\nRegressão logistica min_max:')
     X_minmax_train, X_minmax_test = min_max(X_train, X_test)
     taxa_aprendizado = 0.1
     w_log = regressao_logistica_multiclasse(X_minmax_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
     # plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}_minmax.png'.format(taxa_aprendizado), figsize=(10,5))
     y_hat = preditor_logistico_multiclasse(X_minmax_test, w_log)
-    print('Regressão logistica z_score:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score a softmax
+    print('\nRede Neural Softmax z_score:')
     X_z_score_train, X_z_score_test = z_score(X_train, X_test)
     taxa_aprendizado = 0.1
-    w_soft, erros = redeNeuralSoftmax(X_z_score_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=5000)
+    w_soft, erros = redeNeuralSoftmax(X_z_score_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=5000, plot=False)
     plt.plot(erros)
     plt.show()
     # plot_erros(erros, output_fname='./imgs/iris_erro_redeSoftMax_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
     y_hat = preditorNeuralSoftmax(X_z_score_test, w_soft)
-    print('Rede Neural Softmax z_score:')
     _ = acuracia(y_hat, y_test)
+
+if __name__ == "__main__":
+    main()
 
     # # Com regularização
     # # Variando 0<=lambda<1 

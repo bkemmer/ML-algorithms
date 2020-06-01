@@ -31,7 +31,7 @@ def redeNeuralSoftmax(X, y, taxa_aprendizado=0.1, max_iteracoes=15000, custo_min
 
         if plot:
             if i % 100 == 0:
-                print('{}: {}'.format(i, custo_))
+                print('{}: {:.4}'.format(i, custo_))
         i += 1
 
     print('Época final: {}\nCusto final: {}'.format(i, custo_))

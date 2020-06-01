@@ -47,7 +47,7 @@ def plotTW(plano_1, plano_2, y_teste, idx):
 def twsvm(X, y, eps=1e-16, C_1 = 100, C_2 = 100):
 
     N, d = np.shape(X)
-    print((N, d))
+    # print((N, d))
 
     A = X[y>0]
     B = X[y<=0]
@@ -76,15 +76,15 @@ def twsvm(X, y, eps=1e-16, C_1 = 100, C_2 = 100):
     alpha_bounds = [(bound)]*len(alpha_inicial)
     # const1 = {'type': 'ineq', 'fun': }
     sol = minimize(objective, x0=alpha_inicial, args=(e_2, M), method='SLSQP', bounds=alpha_bounds)
-    print('Soluções alpha:')
+    # print('Soluções alpha:')
     alphas = sol.x
-    print(alphas)
+    # print(alphas)
 
-    print('Valor em alpha*:')
-    print(sol.fun)
+    # print('Valor em alpha*:')
+    # print(sol.fun)
 
     z_1 = -np.linalg.pinv(TMP1) @ R.T @ alphas
-    print(z_1)
+    # print(z_1)
 
     # segundo plano
     L = np.concatenate((K_A, e_1), axis=1)
@@ -100,15 +100,15 @@ def twsvm(X, y, eps=1e-16, C_1 = 100, C_2 = 100):
     bound = (0, C_2)
     gamma_bounds = [(bound)]*len(gamma_inicial)
     sol = minimize(objective, x0=gamma_inicial, args=(e_1, M), method='SLSQP', bounds=gamma_bounds)
-    print('Soluções gamma:')
+    # print('Soluções gamma:')
     gammas = sol.x
-    print(gammas)
+    # print(gammas)
 
-    print('Valor em gamma*:')
-    print(sol.fun)
+    # print('Valor em gamma*:')
+    # print(sol.fun)
 
     z_2 = np.linalg.pinv(TMP2) @ L.T @ gammas
-    print(z_2)
+    # print(z_2)
 
     return z_1, z_2
 

@@ -58,19 +58,18 @@ def obter_dataset_hepatitis(input_path):
     y[y == 2.] = 1
     return X,y
 
-if __name__ == "__main__":
-
-    # Dataset Hepatitis
+def main():
+        # Dataset Hepatitis
     # Sem normalização
     input_path='./data/hepatitis/hepatitis.data'
 
     X, y = obter_dataset_hepatitis(input_path)
-    print('5 exemplos de X:')
-    print(X[0:5, :])
-    print('5 exemplos de y:')
-    print(y[0:5])
+    # print('5 exemplos de X:')
+    # print(X[0:5, :])
+    # print('5 exemplos de y:')
+    # print(y[0:5])
     print('Dimensão de X: ', np.shape(X))
-    print('Dimensão de : ', np.shape(y))
+    print('Dimensão de y: ', np.shape(y))
 
     # Completando todos os dados faltantes com a média de sua respectiva coluna
     X_train, y_train, X_test, y_test = divide_dataset(X, y)
@@ -79,49 +78,50 @@ if __name__ == "__main__":
     w = regressao_linear(X_train, y_train)
     print('dimensão de w: ', np.shape(w))
     y_hat = preditor_linear(X_test, w)
-    print('Regressão linear s/normalização:')
+    print('\nRegressão linear s/normalização:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score
     X_z_score_train, X_z_score_test = z_score(X_train, X_test)
     w = regressao_linear(X_z_score_train, y_train)
     y_hat = preditor_linear(X_z_score_test, w)
-    print('Regressão linear z_score:')
+    print('\nRegressão linear z_score:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com min max
     X_min_max_train, X_min_max_test = min_max(X_train, X_test, slack=2)
     w = regressao_linear(X_train, y_train)
     y_hat = preditor_linear(X_min_max_test, w)
-    print('Regressão linear min_max:')
+    print('\nRegressão linear min_max:')
     _ = acuracia(y_hat, y_test)
 
-    # Utilizando a regressao logistica
-    title = "Regressão logística:"
-    print(title)
-    taxa_aprendizado = 0.1
-    w_log, erros = regressao_logistica(X_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
-    plot_erros(erros, output_fname='./imgs/hepatitis_erro_logistica_{}.png'.format(taxa_aprendizado), figsize=(10,5))
-    y_hat_log = preditor_logistico(X_test, w_log)
-    _ = acuracia(y_hat_log, y_test)
+    # # Utilizando a regressao logistica
+    # title = "Regressão logística:"
+    # print(title)
+    # taxa_aprendizado = 0.1
+    # w_log, erros = regressao_logistica(X_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
+    # plot_erros(erros, output_fname='./imgs/hepatitis_erro_logistica_{}.png'.format(taxa_aprendizado), figsize=(10,5))
+    # y_hat_log = preditor_logistico(X_test, w_log)
+    # print('\nRegressão logistica z_score:')
+    # _ = acuracia(y_hat_log, y_test)
 
 
     # Normalizando com z_score a regressão logística
     X_z_score_train, X_z_score_test = z_score(X_train, X_test)
     taxa_aprendizado = 0.1
     w_log, erros = regressao_logistica(X_z_score_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=2000)
-    plot_erros(erros, output_fname='./imgs/hepatitis_erro_logistica_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
+    # plot_erros(erros, output_fname='./imgs/hepatitis_erro_logistica_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
     y_hat = preditor_logistico(X_z_score_test, w_log)
-    print('Regressão logistica z_score:')
+    print('\nRegressão logistica z_score:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score a regressão logística
     X_minmax_train, X_minmax_test = min_max(X_train, X_test)
     taxa_aprendizado = 0.1
     w_log, erros = regressao_logistica(X_minmax_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=2000)
-    plot_erros(erros, output_fname='./imgs/hepatitis_erro_logistica_{}_minmax.png'.format(taxa_aprendizado), figsize=(10,5))
+    # plot_erros(erros, output_fname='./imgs/hepatitis_erro_logistica_{}_minmax.png'.format(taxa_aprendizado), figsize=(10,5))
     y_hat = preditor_logistico(X_minmax_test, w_log)
-    print('Regressão logistica min_max:')
+    print('\nRegressão logistica min_max:')
     _ = acuracia(y_hat, y_test)
 
     # Normalizando com z_score a Rede Neural com Softmax
@@ -131,8 +131,12 @@ if __name__ == "__main__":
     w_soft, erros = redeNeuralSoftmax(X_z_score_train, y_train_multi, taxa_aprendizado=taxa_aprendizado, max_iteracoes=5000, plot=False)
     plot_erros(erros, output_fname='./imgs/hepatitis_erro_redeSoftMax_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5))
     y_hat = preditorNeuralSoftmax(X_z_score_test, w_soft)
-    print('Rede Neural Softmax z_score:')
+    print('\nRede Neural Softmax z_score:')
     _ = acuracia(y_hat, y_test_multi)
+
+if __name__ == "__main__":
+    main()
+
 
     # # # Com regularização
     # # Variando 0<=lambda<1 

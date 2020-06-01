@@ -120,7 +120,7 @@ def completar_com(X_train, X_test, func, cols=None):
         X_test[np.isnan(X_test[:,col]), col] = val
     return X_train, X_test
 
-def plot_erros(erros, output_fname, figsize=(15,15)):
+def plot_erros(erros, output_fname, figsize=(15,15), title=''):
     """ Função para plotar os erros
 
     Arguments:
@@ -131,7 +131,7 @@ def plot_erros(erros, output_fname, figsize=(15,15)):
     ax1.plot(erros)
     ax1.set_xlabel("Iterações")
     ax1.set_ylabel("J(theta): Custo")
-    plt.title('Função de erro a cada iteração')
+    plt.title(str(title) + ' Função de erro a cada iteração')
     fig.savefig(output_fname)
     plt.show()
     
