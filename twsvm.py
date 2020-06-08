@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.optimize import minimize
-# from scipy.spatial import distance
 import seaborn as sns 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -136,12 +135,12 @@ def preditor_twsvm(X_test, X_treino, y_treino, kernel, z1, z2, y_teste=None):
 
     idx_pos = plano_1 > 0
     idx_neg = plano_2 <= 0
-    idx = np.logical_not(np.logical_or(idx_pos, idx_neg))
     y_hat = np.where(np.abs(plano_1)>np.abs(plano_2), -1, 1)
     y_hat[idx_pos] = -1
     y_hat[idx_pos] = 1
 
     if y_teste is not None:
+        idx = np.logical_not(np.logical_or(idx_pos, idx_neg))
         plotTW(plano_1, plano_2, y_teste, idx)
 
     return y_hat

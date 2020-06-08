@@ -21,12 +21,12 @@ As variávies independentes incluem: número de gravidezes que o paciente teve, 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import acuracia, divide_dataset, z_score, min_max, plot_erros, Ymulticlasse
-from regressao_linear import regressao_linear, preditor_linear, plot_regularizacao
+# from utils import acuracia, divide_dataset, z_score, min_max, plot_erros, Ymulticlasse
+# from regressao_linear import regressao_linear, preditor_linear, plot_regularizacao
 
-from regressao_logistica import regressao_logistica, preditor_logistico
+# from regressao_logistica import regressao_logistica, preditor_logistico
 
-from RedeNeuralSoftmax import redeNeuralSoftmax, preditorNeuralSoftmax
+# from RedeNeuralSoftmax import redeNeuralSoftmax, preditorNeuralSoftmax
 
 from twsvm import twsvm, preditor_twsvm, kernel_pol
 
