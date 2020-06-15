@@ -7,15 +7,16 @@ import numpy as np
 from cvxopt import matrix
 from cvxopt import solvers
 
+import matplotlib.pyplot as plt
 
 # Kernels
 def kernel_linear(X, Y, parametros):
-    return np.dot(X,Y)
+    return np.dot(X,Y.T)
 
 def kernel_polinomial(X, Y, parametros):
     grau = parametros.get('grau', 2)
     escalar = parametros.get('escalar', 1)
-    return np.power((np.dot(X, Y) + escalar), grau)
+    return np.power((np.dot(X, Y.T) + escalar), grau)
 
 def kernel_rbf(X, Y,  parametros): #gaussiano
     sigma = parametros.get('sigma', 0.5)
@@ -33,7 +34,7 @@ class SVM(object):
         C: penalizador, padrão=0
         limite: limite para ser um vetor de suporte, padrão=1e-5
     """
-    def __init__(self, kernel=kernel_linear, C=0, limite=1e-5, **parametros):
+    def __init__(self, kernel=kernel_linear, C=0, limite=1e-4, **parametros):
         self.kernel = kernel
         self.parametros = parametros
         self.C = np.float(C)
@@ -51,8 +52,17 @@ class SVM(object):
         # Resolvendo o problema quadrático
         P = matrix(np.outer(y, y)*K, tc='d')
         q = matrix(np.ones(n_samples)*-1, tc='d')
-        G = matrix(np.identity(n_samples)*-1, tc='d')
-        h = matrix(np.zeros(n_samples), tc='d')
+
+        C = self.C
+        if int(C) == 0:
+            G = matrix(np.identity(n_samples)*-1, tc='d')
+            h = matrix(np.zeros(n_samples), tc='d')
+        else:
+            G_aux = np.vstack((np.identity(n_samples)*-1, np.identity(n_samples)))
+            G = matrix(G_aux, tc='d')
+            h_aux = np.hstack((np.zeros(n_samples), np.ones(n_samples)*C))
+            h = matrix(h_aux, tc='d')
+
         A = matrix(y.reshape((1,n_samples)), tc='d')
         b = matrix(0.0)
 
@@ -62,34 +72,41 @@ class SVM(object):
         
         # Identificando os vetores de suporte utilizados e separando em 2 índices: classe positiva e negativa
         vetores_suporte = alphas > self.limite
-        vetores_suporte_neg = np.logical_and(vetores_suporte, y < 0)
-        vetores_suporte_pos = np.logical_and(vetores_suporte, y > 0)
+        if int(C) != 0:
+            vetores_suporte_not = np.logical_not(alphas > C - self.limite)
+            vetores_suporte = np.logical_and(vetores_suporte, vetores_suporte_not)
+
+        #filtrando somente os vetores de suporte
+        alphas = alphas[vetores_suporte]
+        X = X[vetores_suporte]
+        y = y[vetores_suporte]
+        K = K[vetores_suporte][:,vetores_suporte]
+
+
+        #intercept - valor médio nos vetores de suporte
+        w = alphas * y
+        y_pred_svm = K @ w
+        # kernel_polinomial(X,X, self.parametros)
+        b = np.mean(y - y_pred_svm)
+
+        # b = np.mean((1-alphas_sv/C)*y_sv - y_pred_svm)
         
-        #intercept - valor mediano nos vetores de suporte
-        self.b = (-1/2)*(np.max(K[:,vetores_suporte_neg] @ alphas[vetores_suporte_neg]) + np.min(K[:,vetores_suporte_pos] @ alphas[vetores_suporte_pos]))
-        
-        self.alphas = alphas[vetores_suporte]
-        self.K = K[:,vetores_suporte]
-        self.y = y[vetores_suporte]
+        plot = True
+        if plot:
+            bias = y - y_pred_svm
+            plt.hist(bias)
+            plt.title("Bias em {} vetores de suporte\nMédia {:.2f}".format(len(bias), np.mean(bias)))
+            plt.xlabel('Bias')
+            plt.show()
 
-    # def predict(self, X):
-    #     pass
+        self.alphas = alphas
+        self.y_vetores_suporte = y
+        self.X_vetores_suporte = X
+        self.b = b
 
-    # def project(self, X):
-    #     if self.w is not None:
-    #         return np.dot(X, self.w) + self.b
-    #     else:
-    #         y_predict = np.zeros(len(X))
-    #         for i in range(len(X)):
-    #             s = 0
-    #             for a, sv_y, sv in zip(self.a, self.sv_y, self.sv):
-    #                 s += a * sv_y * self.kernel(X[i], sv)
-    #             y_predict[i] = s
-    #         return y_predict + self.b
-
-    # def predict(self, X):
-    #     return np.sign(self.project(X))
-
+    def predict(self, X):
+        return np.sign(np.sum(self.alphas * self.y_vetores_suporte * 
+                                self.kernel(X, self.X_vetores_suporte, self.parametros), axis = 1) + self.b)
 
 if __name__ == '__main__':
 
@@ -106,9 +123,21 @@ if __name__ == '__main__':
 
     svm_clf = SVM(kernel=kernel_linear)
     svm_clf.fit(X, y_and)
-    print(svm_clf.alphas)
+    y_hat = svm_clf.predict(X)
+    print(y_hat)
+    print(y_and)
 
     svm_clf = SVM(kernel=kernel_polinomial, grau=2, escalar=1)
     svm_clf.fit(X, y_xor)
-    print(svm_clf.alphas)
+    y_hat = svm_clf.predict(X)
+    print(y_hat)
+    print(y_xor)
 
+    svm_clf = SVM(kernel=kernel_polinomial, grau=2, escalar=1)
+    svm_clf.fit(X, y_and)
+    y_hat = svm_clf.predict(X)
+    print(y_and)
+    print(y_hat)
+ 
+    # test_linear()
+    # test_soft()

@@ -4,9 +4,6 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import cvxopt
-import cvxopt.solvers
-
 # TWSVM
 
 def kernel_pol(X, C, pol=2, escalar=1):

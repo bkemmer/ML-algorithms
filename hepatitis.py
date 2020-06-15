@@ -41,6 +41,11 @@ from regressao_linear import regressao_linear, preditor_linear, plot_regularizac
 
 from regressao_logistica import regressao_logistica, preditor_logistico
 
+#SVM
+from twsvm import twsvm, preditor_twsvm, kernel_pol
+from svm import SVM, kernel_linear, kernel_polinomial, kernel_rbf
+from sklearn.svm import SVC
+
 from RedeNeuralSoftmax import redeNeuralSoftmax, preditorNeuralSoftmax
 
 def obter_dataset_hepatitis(input_path):
@@ -124,6 +129,32 @@ def main():
     print('\nRegressão logistica min_max:')
     _ = acuracia(y_hat, y_test)
 
+    # Normalizando com z_score TW-SVM
+    c=1.0
+    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    z_1, z_2 = twsvm(X_z_score_train, y_train, C_1=c, C_2=c)
+    y_hat = preditor_twsvm(X_z_score_test, X_z_score_train, y_train, kernel_pol, z_1, z_2) #, y_test
+    # plot_erros(erros, output_fname='./imgs/diabetes_erro_svm_{}_zscore.png'.format(), figsize=(10,5))
+    print('\nTW-SVM z_score:')
+    _ = acuracia(y_hat, y_test, show=True)
+
+    # Normalizando com z_score SVM
+    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    c=1
+    svm_clf = SVM(kernel=kernel_polinomial, grau=2, escalar=1, C=c)
+    svm_clf.fit(X_z_score_train, y_train)
+    y_hat = svm_clf.predict(X_z_score_test)
+    print('\nSVM z_score:')
+    _ = acuracia(y_hat, y_test, show=True)
+
+    # Normalizando com z_score SVM - SCIKIT
+    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    clf = SVC(kernel='poly', degree=2, coef0=1, C=2)
+    clf.fit(X_z_score_train, y_train)
+    y_scikit = clf.predict(X_z_score_test)
+    print('\nSVM Scikit-learn z_score:')
+    _ = acuracia(y_scikit, y_test)
+
     # Normalizando com z_score a Rede Neural com Softmax
     X_z_score_train, X_z_score_test = z_score(X_train, X_test)
     y_train_multi, y_test_multi = Ymulticlasse(y_train, y_test)
@@ -136,18 +167,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-    # # # Com regularização
-    # # Variando 0<=lambda<1 
-    # plot_regularizacao(X_train, y_train, X_test, y_test,
-    #                     output_file_name="./imgs/hepatitis_acuracia_regressor_linear.png")
-    # # Variando 0<=lambda<10
-    # plot_regularizacao(X_train, y_train, X_test, y_test, 
-    #                     limits_min=0, limits_max=1000, 
-    #                     output_file_name="./imgs/hepatitis_acuracia_regressor_linear10.png")
-
-    # # Variando 0<=lambda<100
-    # plot_regularizacao(X_train, y_train, X_test, y_test, 
-    #                     limits_min=0, limits_max=10000, 
-    #                     output_file_name="./imgs/hepatitis_acuracia_regressor_linear100.png")

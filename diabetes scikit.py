@@ -27,7 +27,8 @@ from regressao_linear import regressao_linear, preditor_linear, plot_regularizac
 from regressao_logistica import regressao_logistica, preditor_logistico
 
 from sklearn.linear_model import LogisticRegression
-from sklearn import svm
+
+from sklearn import svm as svm_scikit
 
 from RedeNeuralSoftmax import redeNeuralSoftmax, preditorNeuralSoftmax
 
@@ -109,9 +110,14 @@ if __name__ == "__main__":
     
     # # Normalizando com z_score
     X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    clf = svm.SVC(C=1, kernel='poly', degree=2)
+    clf = svm_scikit.SVC(C=1, kernel='poly', degree=2)
     clf.fit(X_z_score_train, y_train)
-
     y_scikit = clf.predict(X_z_score_test)
-
     _ = acuracia(y_scikit, y_test)
+    
+
+    svm_clf = svm_scikit.SVC(kernel='poly', degree=2, coef0=1, shrinking=False)
+    svm_clf.fit(X_z_score_train, y_train)
+    y_hat = svm_clf.predict(X_z_score_test)
+    print('\nSVM scikit z_score:')
+    _ = acuracia(y_hat, y_test)
