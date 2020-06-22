@@ -6,7 +6,6 @@
 import numpy as np
 from cvxopt import matrix
 from cvxopt import solvers
-solvers.options['show_progress'] = False
 
 import matplotlib.pyplot as plt
 
@@ -65,29 +64,51 @@ class SVM(object):
             h = matrix(h_aux, tc='d')
 
         A = matrix(y.reshape((1,n_samples)), tc='d')
+        # A = matrix(y, (1,n_samples))
         b = matrix(0.0)
 
         # Solucionando o problema QP
-        solution = solvers.qp(P, q, G, h, A, b)
+        options={'mosek':{'msg_lev':'GLP_MSG_OFF'}}
+        solution = solvers.qp(P, q, G, h, A, b, options)
         alphas = np.ravel(solution['x']) # alphas
         
         # Identificando os vetores de suporte utilizados e separando em 2 índices: classe positiva e negativa
         vetores_suporte = alphas > self.limite
         idx_ = np.arange(len(alphas))[vetores_suporte]
-        # if int(C) != 0:
-        #     vetores_suporte_not = np.logical_not(alphas > C - self.limite)
-        #     vetores_suporte = np.logical_and(vetores_suporte, vetores_suporte_not)
 
         #filtrando somente os vetores de suporte
-        alphas = alphas[vetores_suporte]
-        X = X[vetores_suporte]
-        y = y[vetores_suporte]
-        K = K[:,vetores_suporte][vetores_suporte]
+        alphas_sv = alphas[vetores_suporte]
+        X_sv = X[vetores_suporte]
+        y_sv = y[vetores_suporte]
 
-        #intercept - valor médio nos vetores de suporte
-        w = alphas * y
-        y_pred_svm = K @ w
-        b = np.mean(y - y_pred_svm)
+        if int(C) != 0:
+            vetores_suporte_not = np.logical_not(alphas > C - self.limite)
+            vetores_suporte_b = np.logical_and(vetores_suporte, vetores_suporte_not)
+
+            K_b = K[:,vetores_suporte_b][vetores_suporte_b]
+            y_b = y[vetores_suporte_b]
+            alphas_b = alphas[vetores_suporte_b]
+            w_b = alphas_b * y_b
+            y_pred_svm = K_b @ w_b
+            b = np.mean(y_b - y_pred_svm)
+        else:
+            #intercept - valor médio nos vetores de suporte
+            w = alphas * y
+            y_pred_svm = K @ w
+            b = np.mean(y - y_pred_svm)
+
+        
+
+
+
+
+        # plot = True
+        # if plot:
+        #     bias = y - y_pred_svm
+        #     plt.hist(bias)
+        #     plt.title("Bias em {} vetores de suporte\nMédia {:.2f}".format(len(bias), np.mean(bias)))
+        #     plt.xlabel('Bias')
+        #     plt.show()
 
         self.alphas = alphas
         self.idx_ = idx_
@@ -99,8 +120,9 @@ class SVM(object):
         return np.sign(np.sum(self.alphas * self.y_vetores_suporte * 
                                 self.kernel(X, self.X_vetores_suporte, self.parametros), axis = 1) + self.b)
 
-def teste():
-     # testando
+if __name__ == '__main__':
+
+    # testando
     X = np.array([
             [-1, -1],
             [1, -1],
@@ -129,5 +151,5 @@ def teste():
     print(y_and)
     print(y_hat)
  
-if __name__ == '__main__':
-    teste()
+    # test_linear()
+    # test_soft()

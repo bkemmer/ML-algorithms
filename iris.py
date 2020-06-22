@@ -21,12 +21,17 @@ import matplotlib.pyplot as plt
 from utils import acuracia, divide_dataset, z_score, min_max, plot_erros, Ymulticlasse
 from regressao_linear import regressao_linear, preditor_linear, plot_regularizacao
 from regressao_logistica import regressao_logistica_multiclasse, preditor_logistico_multiclasse
-from RedeNeuralSoftmax import redeNeuralSoftmax, preditorNeuralSoftmax
+# from RedeNeuralSoftmax import redeNeuralSoftmax, preditorNeuralSoftmax
 
 #SVM
 from twsvm import twsvm, preditor_twsvm, kernel_pol
 from svm import SVM, kernel_linear, kernel_polinomial, kernel_rbf
 from sklearn.svm import SVC
+
+from svm_internet import SVM as SVM_int
+from svm_internet import linear_kernel, polynomial_kernel, gaussian_kernel
+
+from RedeNeural import redeNeuralSoftmax, preditorNeuralSoftmax
 
 def obter_dataset_iris(input_path, dict_str):
     """ Função lê o dataset e retorna X, y
@@ -121,7 +126,15 @@ def main():
         print('\nSVM z_score:{}'.format(i))
         _ = acuracia(y_hat, y_test[:,i])
 
+    # c=1.0
+    # for i in range(0, y_train.shape[1]):
+    #     z_1, z_2 = twsvm(X_z_score_train, y_train[:,i], C_1=c, C_2=c)
+    #     y_hat = preditor_twsvm(X_z_score_test, X_z_score_train, y_train[:,i], kernel_pol, z_1, z_2) #, y_test
+    #     print('\nTW-SVM z_score:')
+    #     _ = acuracia(y_hat, y_test[:,i])
+
     for i in range(0, y_train.shape[1]):
+        print("\n{}".format(i))
         # Normalizando com z_score SVM - SCIKIT
         X_z_score_train, X_z_score_test = z_score(X_train, X_test)
         clf = SVC(kernel='poly', degree=2, coef0=1, C=2)
@@ -129,8 +142,19 @@ def main():
         y_scikit = clf.predict(X_z_score_test)
         print('\nSVM Scikit-learn z_score:{}'.format(i))
         _ = acuracia(y_scikit, y_test[:,i])
+        # print("intercept: {:.4f}".format(clf.intercept_[0]))
+        # print("sv:")
+        # print(clf.support_vectors_)
+        # print("sv_idx:")
+        # print(clf.support_)
     
-
+    # for i in range(0, y_train.shape[1]):
+    #     # Normalizando com z_score SVM - SCIKIT
+    #     clf_int = SVM_int(kernel=polynomial_kernel, C=2)
+    #     clf_int.fit(X_z_score_train, y_train[:,i])
+    #     y_int = clf_int.predict(X_z_score_test)
+    #     print('\nSVM internet z_score:{}'.format(i))
+    #     _ = acuracia(y_int, y_test[:,i])
 
     # # Normalizando com z_score TW-SVM
     # c=1.0

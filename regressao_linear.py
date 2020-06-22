@@ -16,8 +16,8 @@ def regressao_linear(X, y, lamdba=0):
     """
     # Adicionadno a coluna x_0 que será multiplicada com o viés (bias)
     X = np.column_stack((np.ones((len(X),1)), X))
-    _, d = np.shape(X)
-    return np.linalg.inv(X.T.dot(X) + lamdba*np.identity(d)).dot(X.T).dot(y)
+    n, d = np.shape(X)
+    return np.linalg.inv(X.T.dot(X) + n*lamdba*np.identity(d)).dot(X.T).dot(y)
 
 def preditor_linear(X, w):
     """ Preditor da função linear estimada

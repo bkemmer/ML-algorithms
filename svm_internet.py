@@ -56,6 +56,11 @@ class SVM(object):
 
         # Support vectors have non zero lagrange multipliers
         sv = a > 1e-5
+
+        # if self.C is not None:
+        #     vetores_suporte_not = np.logical_not(a > self.C - 1e-5)
+        #     sv = np.logical_and(sv, vetores_suporte_not)
+        
         ind = np.arange(len(a))[sv]
         self.a = a[sv]
         self.sv = X[sv]
@@ -63,10 +68,12 @@ class SVM(object):
         print("%d support vectors out of %d points" % (len(self.a), n_samples))
 
         # Intercept
+        b_list = []
         self.b = 0
         for n in range(len(self.a)):
             self.b += self.sv_y[n]
             self.b -= np.sum(self.a * self.sv_y * K[ind[n],sv])
+            b_list.append(self.b)
         self.b /= len(self.a)
 
         # Weight vector
@@ -77,6 +84,9 @@ class SVM(object):
             a=1
         else:
             self.w = None
+
+        self.ind = ind
+        
 
     def project(self, X):
         if self.w is not None:

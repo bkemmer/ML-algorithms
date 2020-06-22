@@ -26,14 +26,10 @@ from regressao_linear import regressao_linear, preditor_linear, plot_regularizac
 
 from regressao_logistica import regressao_logistica, preditor_logistico
 
-from RedeNeuralSoftmax import redeNeuralSoftmax, preditorNeuralSoftmax
-
 from twsvm import twsvm, preditor_twsvm, kernel_pol
 from svm import SVM, kernel_linear, kernel_polinomial, kernel_rbf
-# TODO: deletar
-from svm_internet import SVM as SVM_int
-from svm_internet import linear_kernel, polynomial_kernel, gaussian_kernel
-from sklearn.svm import SVC 
+
+from RedeNeural import redeNeuralSoftmax, preditorNeuralSoftmax
 
 import pandas as pd
 
@@ -84,6 +80,8 @@ def main():
     # input_path='./data/diabetes/diabetes.csv'
     # X, y = obter_dataset_hepatitis(input_path)
 
+
+    df_resultados = pd.DataFrame(columns=['Algoritmo', ])
     input_path_train ='./data/diabetes/dataset_train.txt'
     input_path_test ='./data/diabetes/dataset_teste.txt'
 
@@ -97,12 +95,14 @@ def main():
     # print('\nRegressão linear s/normalização:')
     # _ = acuracia(y_hat, y_test)
 
-    # Normalizando com z_score
-    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    w = regressao_linear(X_z_score_train, y_train)
-    y_hat = preditor_linear(X_z_score_test, w)
-    print('\nRegressão linear z_score:')
-    _ = acuracia(y_hat, y_test)
+    for lamdba in [0, .5, 1, 10, 100, 1000]:
+        # Normalizando com z_score
+        X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+        w = regressao_linear(X_z_score_train, y_train, lamdba=lamdba)
+        y_hat = preditor_linear(X_z_score_test, w)
+        print('\nRegressão linear z_score lambda {}:'.format(lamdba))
+        _ = acuracia(y_hat, y_test)
+
 
     # # Normalizando com min max
     # X_min_max_train, X_min_max_test = min_max(X_train, X_test)
@@ -110,16 +110,6 @@ def main():
     # y_hat = preditor_linear(X_min_max_test, w)
     # print('\nRegressão linear min_max:')
     # _ = acuracia(y_hat, y_test)
-
-    # # # Utilizando a regressao logistica
-    # # title = "Regressão logística:"
-    # # print(title)
-    # # taxa_aprendizado = 0.5
-    # # w_log, erros = regressao_logistica(X_train, y_train, taxa_aprendizado=taxa_aprendizado, max_iteracoes=1000)
-    # # plot_erros(erros, output_fname='./imgs/diabetes_erro_logistica_{}.png'.format(taxa_aprendizado), figsize=(10,5))
-    # # y_hat_log = preditor_logistico(X_test, w_log)
-    # # _ = acuracia(y_hat_log, y_test)
-
 
     # Normalizando com z_score a regressão logística
     X_z_score_train, X_z_score_test = z_score(X_train, X_test)
@@ -139,50 +129,59 @@ def main():
     # print('\nRegressão logistica min_max:')
     # _ = acuracia(y_hat, y_test)
 
-    # Normalizando com z_score TW-SVM
-    c=2.0
-    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    z_1, z_2 = twsvm(X_z_score_train, y_train, C_1=c, C_2=c)
-    y_hat = preditor_twsvm(X_z_score_test, X_z_score_train, y_train, kernel_pol, z_1, z_2) #, y_test
-    # plot_erros(erros, output_fname='./imgs/diabetes_erro_svm_{}_zscore.png'.format(), figsize=(10,5))
-    print('\nTW-SVM z_score:')
-    _ = acuracia(y_hat, y_test, show=True)
-
-    # Normalizando com z_score SVM
-    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    c=2
-    svm_clf = SVM(kernel=kernel_polinomial, grau=2, escalar=1, C=c)
-    svm_clf.fit(X_z_score_train, y_train)
-    y_hat = svm_clf.predict(X_z_score_test)
-    print('\nSVM z_score:')
-    _ = acuracia(y_hat, y_test, show=True)
-
-    # Normalizando com z_score SVM - SCIKIT
-    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    clf = SVC(kernel='poly', degree=2, coef0=1, C=2)
-    clf.fit(X_z_score_train, y_train)
-    y_scikit = clf.predict(X_z_score_test)
-    print('\nSVM Scikit-learn z_score:')
-    _ = acuracia(y_scikit, y_test)
-
-    # Normalizando com z_score SVM - SCIKIT
-    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    clf = SVM_int(kernel=polynomial_kernel, C=2)
-    clf.fit(X_z_score_train, y_train)
-    y_int = clf.predict(X_z_score_test)
-    print('\nSVM internet z_score:')
-    _ = acuracia(y_int, y_test)
-
-
-    # # Normalizando com z_score a Rede Neural com Softmax
-    # print('\nRede Neural Softmax z_score:')
+    # # Normalizando com z_score TW-SVM
+    # c=2.0
     # X_z_score_train, X_z_score_test = z_score(X_train, X_test)
-    # y_train_multi, y_test_multi = Ymulticlasse(y_train, y_test)
-    # taxa_aprendizado = 0.5
-    # w_soft, erros = redeNeuralSoftmax(X_z_score_train, y_train_multi, taxa_aprendizado=taxa_aprendizado, max_iteracoes=5000, plot=False)
-    # plot_erros(erros, output_fname='./imgs/diabetes_erro_redeSoftMax_{}_zscore.png'.format(taxa_aprendizado), figsize=(10,5), title='Rede Neural Softmax')
-    # y_hat = preditorNeuralSoftmax(X_z_score_test, w_soft)
-    # _ = acuracia(y_hat, y_test_multi)
+    # z_1, z_2 = twsvm(X_z_score_train, y_train, C_1=c, C_2=c)
+    # y_hat = preditor_twsvm(X_z_score_test, X_z_score_train, y_train, kernel_pol, z_1, z_2) #, y_test
+    # # plot_erros(erros, output_fname='./imgs/diabetes_erro_svm_{}_zscore.png'.format(), figsize=(10,5))
+    # print('\nTW-SVM z_score:')
+    # _ = acuracia(y_hat, y_test, show=True)
+
+    # # Normalizando com z_score SVM
+    # X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    # c=2
+    # svm_clf = SVM(kernel=kernel_polinomial, grau=2, escalar=1, C=c)
+    # svm_clf.fit(X_z_score_train, y_train)
+    # y_hat = svm_clf.predict(X_z_score_test)
+    # print('\nSVM z_score:')
+    # _ = acuracia(y_hat, y_test, show=True)
+
+    # # Normalizando com z_score SVM - SCIKIT
+    # X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    # clf = SVC(kernel='poly', degree=2, coef0=1, C=2)
+    # clf.fit(X_z_score_train, y_train)
+    # y_scikit = clf.predict(X_z_score_test)
+    # print('\nSVM Scikit-learn z_score:')
+    # _ = acuracia(y_scikit, y_test)
+
+    # # Normalizando com z_score SVM - SCIKIT
+    # X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    # clf_int = SVM_int(kernel=polynomial_kernel, C=2)
+    # clf_int.fit(X_z_score_train, y_train)
+    # y_int = clf_int.predict(X_z_score_test)
+    # print('\nSVM internet z_score:')
+    # _ = acuracia(y_int, y_test)
+
+    # Normalizando com z_score a Rede Neural com Softmax
+    X_z_score_train, X_z_score_test = z_score(X_train, X_test)
+    y_train_multi, y_test_multi = Ymulticlasse(y_train, y_test)
+    taxa_aprendizado = 0.01
+    W1, b1, W2, b2, custo = redeNeuralSoftmax(X_z_score_train, y_train_multi, h_size=100, ativacao='sigmoid', taxa_aprendizado=taxa_aprendizado, max_iteracoes=10000, custo_min=1e-5, plot=False)
+    y_hat = preditorNeuralSoftmax(X_z_score_test, W1, b1, W2, b2, ativacao='sigmoid')
+    print('\nRede Neural Softmax z_score - Sigmoid -> Softmax:')
+    _ = acuracia(y_hat, y_test_multi)
+    plt.plot(custo)
+    plt.show()
+
+    # Relu
+    taxa_aprendizado = 0.01
+    W1, b1, W2, b2, custo = redeNeuralSoftmax(X_z_score_train, y_train_multi, h_size=100, ativacao='relu', taxa_aprendizado=taxa_aprendizado, max_iteracoes=10000, custo_min=1e-5, plot=False)
+    y_hat = preditorNeuralSoftmax(X_z_score_test, W1, b1, W2, b2, ativacao='relu')
+    print('\nRede Neural Softmax z_score - Relu -> Softmax:')
+    _ = acuracia(y_hat, y_test_multi)
+    plt.plot(custo)
+    plt.show()
 
 if __name__ == "__main__":
     main()

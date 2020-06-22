@@ -38,7 +38,7 @@ def grad_erro(X, y, w, N):
         float -- Gradiente da função de erro 
     """
     acc = 0
-    for i in range(0,N):
+    for i in range(N):
         acc += (y[i]*X[i]) / (1 + np.exp(y[i]*np.dot(w, X[i])))
     return -(1/N)*acc
 
@@ -55,7 +55,7 @@ def erro(X, y, w, N):
         float -- Erro calculado
     """
     val_erro = 0
-    for i in range(0,N):
+    for i in range(N):
         val_erro += np.log(1+np.exp(-y[i]*np.dot(w, X[i])))
     return (1/N)*val_erro
 
@@ -79,9 +79,9 @@ def regressao_logistica(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e
 
     # Inicializa a matriz de pesos em W_0
     w_anterior = inicializa_w(d)
-    
+
     erros = []
-    for iteracao in range(0, max_iteracoes):
+    for _ in range(max_iteracoes):
         grad = grad_erro(X, y, w_anterior, N)
         w = w_anterior - taxa_aprendizado*grad
         w_anterior = w
@@ -89,9 +89,6 @@ def regressao_logistica(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e
         if np.linalg.norm(grad) < tolerancia:
             return w, erros
     return w, erros
-  
-# def softmax(s):
-#     return (np.exp(s.T) / np.sum(np.exp(s), axis=1)).T
 
 def regressao_logistica_multiclasse(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e-5):
     """ Regressão logística multiclasse
@@ -115,16 +112,16 @@ def regressao_logistica_multiclasse(X, y, taxa_aprendizado, max_iteracoes=100, t
 
     # Inicializa a matriz de pesos em W_0
     w_anterior = inicializa_w_multi(d, classes)
-    
+
     # erros = []
     grad = 0
-    for iteracao in range(0, max_iteracoes):
-        for i in range(0, N):
+    for iteracao in range(max_iteracoes):
+        for i in range(N):
             xi = np.expand_dims(X[i], axis=1)
             yi = np.expand_dims(y[i], axis=1)
             grad -= np.dot(xi, (softmax(np.dot(w_anterior.T, xi), axis=0) - yi).T)
 
-        grad = (-1/N) * grad
+        grad *= -1/N
         w = w_anterior - taxa_aprendizado*grad
         w_anterior = w
         # erros.append(erro(X, y, w, N))

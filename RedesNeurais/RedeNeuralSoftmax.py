@@ -2,14 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def softmax(A, axis=1):
+    A -= np.max(A)
     expA = np.exp(A)
-    return expA / expA.sum(axis=axis, keepdims=True)
+    return expA / expA.sum(axis=1, keepdims=True)
 
 def redeNeuralSoftmax(X, y, taxa_aprendizado=0.1, max_iteracoes=15000, custo_min=1e-2, plot=True):
     
     custo = []
     custo_ = np.inf
-    
+
     N, d = np.shape(X)
     n_classes = y.shape[1]
 
@@ -20,18 +21,18 @@ def redeNeuralSoftmax(X, y, taxa_aprendizado=0.1, max_iteracoes=15000, custo_min
     while ((custo_ > custo_min) and (i < max_iteracoes)):
         # forward pass
         Z = X @ W
+
         y_hat = softmax(Z, axis=1)
 
         # backpropagation
-        dJdW = (1/N)*np.dot(X.T, (y_hat - y))
+        dJdW = (1/N)*(X.T @ (y_hat - y))
         W -= taxa_aprendizado * dJdW
 
         custo_ = np.sum(-y * np.log(y_hat))
         custo.append(custo_)
 
-        if plot:
-            if i % 100 == 0:
-                print('{}: {:.4}'.format(i, custo_))
+        if plot and i % 100 == 0:
+            print('{}: {:.4}'.format(i, custo_))
         i += 1
 
     print('Época final: {}\nCusto final: {}'.format(i, custo_))
