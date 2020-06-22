@@ -114,7 +114,7 @@ def twsvm(X, y, eps=1e-16, C_1 = 100, C_2 = 100):
 
     return z_1, z_2
 
-def preditor_twsvm(X_test, X_treino, y_treino, kernel, z1, z2, div=False):
+def preditor_twsvm(X_test, X_treino, y_treino, kernel, z1, z2):
     """ Preditor TW-SVM
 
     Arguments:
@@ -135,9 +135,6 @@ def preditor_twsvm(X_test, X_treino, y_treino, kernel, z1, z2, div=False):
     K = kernel(X_test, C, pol=2, escalar=1)
     plano_1 = K @ z1[:-1] + z1[-1]
     plano_2 = K @ z2[:-1] + z2[-1]
-    if div:
-        plano_1 /= np.linalg.norm(z1[:-1])
-        plano_2 /= np.linalg.norm(z2[:-1])
 
     idx_pos = plano_1 >= 0
     idx_neg = plano_2 <= 0
