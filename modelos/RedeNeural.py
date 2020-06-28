@@ -95,6 +95,7 @@ def teste():
         X[ix] = np.c_[r*np.sin(t), r*np.cos(t)]
         y[ix] = j
     y_old = np.copy(y)
+    
     y, _ = Ymulticlasse(y, y)
     print("Teste sigmoid:\n")
     W1, b1, W2, b2, custo = redeNeuralSoftmax(X, y, h_size=100, ativacao='sigmoid', taxa_aprendizado=1, max_iteracoes=10000, custo_min=1e-5, plot=True)

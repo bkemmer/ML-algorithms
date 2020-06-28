@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def acuracia(y_hat, y_test, show=True):
     """ Retorna a acurácia do modelo"""
@@ -152,3 +153,60 @@ def Ymulticlasse(y_train, y_test):
         y_train_multi[:, i] = np.where(y_train == classe, 1, 0)
         y_test_multi[:, i] = np.where(y_test == classe, 1, 0)
     return y_train_multi, y_test_multi
+
+def CrossValidacaoEstratificada(X, y, folds=4, seed=42):
+    """ Função para separar por folds fazendo a estratificação por variável y
+
+    Args:
+        X ([type]): [description]
+        y ([type]): [description]
+        folds (int, optional): [description]. Defaults to 4.
+        seed (int, optional): [description]. Defaults to 42.
+
+    Returns:
+        Lista de listas: lista com os ids para cada fold  
+    """
+    np.random.seed(seed)
+    y = np.array(y)
+
+    # caso não y não seja binário
+    multiclasse = len(np.shape(y)) > 1
+    if multiclasse:
+        y = np.argmax(y, axis=1)
+    
+    fold_classes = []
+
+    #construindo as estruturas
+    X_fold_ids = [list() for _ in range(folds)]
+    fold_atual = 0
+    unicos = np.unique(y)
+    for i,y_i in enumerate(unicos):
+        # cria uma lista das classe e os valores os índices(posições) delas no vetor y
+        fold_classes.append(np.where(y == y_i)[0].tolist())
+
+        while len(fold_classes[i])>0:
+            # sorteia um elemento do vetor de elementos da mesma classe
+            if (fold_atual >= folds):
+                fold_atual = 0
+            index_elemento = np.random.randint(len(fold_classes[i]))
+            index = fold_classes[i].pop(index_elemento)
+            # Adiciona o elemento sorteado no bucket correspondente
+            X_fold_ids[fold_atual].append(index)
+            fold_atual += 1
+    
+    print('\nValidação Cruzada:\n\nDados de teste originais:')
+    for i,y_i in enumerate(unicos):
+        y_prop = np.sum(y==y_i) / len(y)
+        print('Proporção nos testes da classe {}: {:.2f} em {:d}'.format(y_i, y_prop, len(y)))
+
+    print('\nApós a separação em {} folds:'.format(folds))
+    for k, fold_id in enumerate(X_fold_ids):
+        for i,y_i in enumerate(unicos):
+            y_prop = np.sum(y[fold_id]==y_i) / len(y[fold_id])
+            print('Fold {:d} - Proporção nos testes da classe {}: {:.2f} em {:d} exemplos'.format(k, y_i, y_prop, len(fold_id)))
+        print()
+    return X_fold_ids
+
+def agrupa_kfolds(df, cols=['Dataset', 'Algoritmo', 'Hyper'], metricas=['mean', 'median', 'std', 'min', 'max']):
+    grouper = df.groupby(cols, as_index=False)['Acuracia']
+    return grouper.agg(metricas).reset_index()

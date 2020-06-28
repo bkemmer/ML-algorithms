@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/bkemmer/miniconda3/envs/sin5016/bin/python",
     "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": false
 }

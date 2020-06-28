@@ -2,7 +2,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import acuracia
+
+from .utils import acuracia
 
 def regressao_linear(X, y, lamdba=0):
     """ Cálculo da regressão linear na forma vetorial sem regularização
@@ -39,7 +40,7 @@ def preditor_linear(X, w):
     # Caso multi-class
     _, n_classes = np.shape(w)
     y_hat = np.ones((len(X), n_classes))
-    for k in range(0, n_classes):
+    for k in range(n_classes):
         y_hat[:, k] = np.sum(w[:, k]*X, axis=1)
     return np.argmax(y_hat, axis=1)
 

@@ -8,21 +8,6 @@ from cvxopt import matrix
 from cvxopt import solvers
 solvers.options['show_progress'] = False
 
-import matplotlib.pyplot as plt
-
-# Kernels
-def kernel_linear(X, Y, parametros):
-    return np.dot(X,Y.T)
-
-def kernel_polinomial(X, Y, parametros):
-    grau = parametros.get('grau', 2)
-    escalar = parametros.get('escalar', 1)
-    return np.power((np.dot(X, Y.T) + escalar), grau)
-
-def kernel_rbf(X, Y,  parametros): #gaussiano
-    sigma = parametros.get('sigma', 0.5)
-    return np.exp(np.power(-np.linalg.norm(X-Y), 2) / (2 * (np.power(sigma, 2))))
-
 class SVM(object):
     """ Classe SVM - Support Vector Machine
         
@@ -31,11 +16,11 @@ class SVM(object):
         kernel: {linear, polinomial, rbf}
         grau: utilizado somente no kernel polinomial (grau do polinômio), padrão=2
         escalar: utilizado somente no kernel polinomial (escalar somado), padrão=1
-        sigma: utilizado somente no kernel rbf (gaussiano), padrão=0.5
+        gamma: utilizado somente no kernel rbf (gaussiano), padrão=0.5
         C: penalizador, padrão=0
         limite: limite para ser um vetor de suporte, padrão=1e-5
     """
-    def __init__(self, kernel=kernel_linear, C=0, limite=1e-5, **parametros):
+    def __init__(self, kernel, C=0, limite=1e-5, **parametros):
         self.kernel = kernel
         self.parametros = parametros
         self.C = np.float(C)
@@ -100,7 +85,9 @@ class SVM(object):
                                 self.kernel(X, self.X_vetores_suporte, self.parametros), axis = 1) + self.b)
 
 def teste():
-     # testando
+
+    # testando
+    from kernels import kernel_linear, kernel_polinomial, kernel_rbf
     X = np.array([
             [-1, -1],
             [1, -1],
@@ -114,20 +101,25 @@ def teste():
     svm_clf = SVM(kernel=kernel_linear)
     svm_clf.fit(X, y_and)
     y_hat = svm_clf.predict(X)
-    print(y_hat)
-    print(y_and)
-
-    svm_clf = SVM(kernel=kernel_polinomial, grau=2, escalar=1)
-    svm_clf.fit(X, y_xor)
-    y_hat = svm_clf.predict(X)
-    print(y_hat)
-    print(y_xor)
+    assert((y_hat == y_and).all())
+    # print(y_hat)
+    # print(y_and)
 
     svm_clf = SVM(kernel=kernel_polinomial, grau=2, escalar=1)
     svm_clf.fit(X, y_and)
     y_hat = svm_clf.predict(X)
-    print(y_and)
-    print(y_hat)
- 
+    assert((y_hat == y_and).all())
+    # print(y_and)
+    # print(y_hat)
+
+    svm_clf = SVM(kernel=kernel_polinomial, grau=2, escalar=1)
+    svm_clf.fit(X, y_xor)
+    y_hat = svm_clf.predict(X)
+    assert((y_hat == y_xor).all())
+    # print(y_hat)
+    # print(y_xor)
+
+
+
 if __name__ == '__main__':
     teste()

@@ -81,7 +81,7 @@ def regressao_logistica(X, y, taxa_aprendizado, max_iteracoes=100, tolerancia=1e
     w_anterior = inicializa_w(d)
 
     erros = []
-    for _ in range(max_iteracoes):
+    for _ in range(int(max_iteracoes)):
         grad = grad_erro(X, y, w_anterior, N)
         w = w_anterior - taxa_aprendizado*grad
         w_anterior = w

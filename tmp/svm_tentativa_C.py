@@ -14,12 +14,12 @@ def kernel_linear(X, Y, parametros):
     return np.dot(X,Y.T)
 
 def kernel_polinomial(X, Y, parametros):
-    grau = parametros.get('grau', 2)
-    escalar = parametros.get('escalar', 1)
+    grau = parametros.get('Grau', 2)
+    escalar = parametros.get('Escalar', 1)
     return np.power((np.dot(X, Y.T) + escalar), grau)
 
 def kernel_rbf(X, Y,  parametros): #gaussiano
-    sigma = parametros.get('sigma', 0.5)
+    sigma = parametros.get('Gamma', 0.5)
     return np.exp(np.power(-np.linalg.norm(X-Y), 2) / (2 * (np.power(sigma, 2))))
 
 class SVM(object):

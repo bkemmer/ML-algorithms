@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.optimize import minimize
-import seaborn as sns 
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -8,30 +7,13 @@ import cvxopt
 import cvxopt.solvers
 
 # TWSVM
-
-def kernel_pol(X, C, pol=2, escalar=1):
-    """ Aplica o kernel polinomial na matriz X
-
-    Arguments:
-        X {Matriz} -- Matriz a ser aplicado o kernel
-        C {Matriz} -- Matriz concatenada entre as duas classes
-
-    Keyword Arguments:
-        pol {int} -- Grau do polinômio (default: {2})
-        escalar {int} -- escalar adicionado (default: {1})
-
-    Returns:
-        Matriz -- Matriz de kernel
-    """
-    return np.power((X @ C.T) + escalar, pol)
-
-
 def objective(alpha, ones, M):
         # Optimization
         # M: R*(S.T*S)^(-1)*R.T
         return -(ones.T @ alpha) + (1/2)*(alpha.T @ M @ alpha)
 
 def plotTW(plano_1, plano_2, y_teste, idx):
+    import seaborn as sns 
     df = pd.DataFrame(dict(
                         plano_1=np.abs(plano_1[idx]), 
                         plano_2=np.abs(plano_2[idx]), 
@@ -46,7 +28,7 @@ def plotTW(plano_1, plano_2, y_teste, idx):
     plt.savefig('./svm_tmp.png')
     plt.show()
 
-def twsvm(X, y, eps=1e-16, C_1 = 100, C_2 = 100):
+def twsvm(X, y, kernel, parametros, eps=1e-16, C_1 = 100, C_2 = 100):
 
     N, d = np.shape(X)
     # print((N, d))
@@ -55,7 +37,8 @@ def twsvm(X, y, eps=1e-16, C_1 = 100, C_2 = 100):
     B = X[y<=0]
     C = np.concatenate([A,B])
 
-    K_A = kernel_pol(A, C, pol=2, escalar=1)
+    # K_A = kernel_pol(A, C, pol=2, escalar=1)
+    K_A = kernel(A, C, parametros)
     n_a = A.shape[0]
     e_1 = np.ones((n_a,1))
     S = np.concatenate((K_A, e_1), axis=1)
@@ -63,7 +46,7 @@ def twsvm(X, y, eps=1e-16, C_1 = 100, C_2 = 100):
     TMP_A = (S.T @ S)
     TMP1 = TMP_A + eps*np.identity(TMP_A.shape[0])
 
-    K_B = kernel_pol(B, C, pol=2, escalar=1)
+    K_B = kernel(B, C, parametros)
     n_b = B.shape[0]
     e_2 = np.ones((n_b,1))
     R = np.concatenate((K_B, e_2), axis=1)
@@ -114,7 +97,7 @@ def twsvm(X, y, eps=1e-16, C_1 = 100, C_2 = 100):
 
     return z_1, z_2
 
-def preditor_twsvm(X_test, X_treino, y_treino, kernel, z1, z2):
+def preditor_twsvm(X_teste, X_treino, y_treino, kernel, parametros, z1, z2, div=False):
     """ Preditor TW-SVM
 
     Arguments:
@@ -132,9 +115,12 @@ def preditor_twsvm(X_test, X_treino, y_treino, kernel, z1, z2):
     B = X_treino[y_treino<=0]
     C = np.concatenate([A,B])
 
-    K = kernel(X_test, C, pol=2, escalar=1)
+    K = kernel(X_teste, C, parametros)
     plano_1 = K @ z1[:-1] + z1[-1]
     plano_2 = K @ z2[:-1] + z2[-1]
+    if div:
+        plano_1 /= np.linalg.norm(z1[:-1])
+        plano_2 /= np.linalg.norm(z2[:-1])
 
     idx_pos = plano_1 >= 0
     idx_neg = plano_2 <= 0
@@ -146,6 +132,7 @@ def preditor_twsvm(X_test, X_treino, y_treino, kernel, z1, z2):
 
 if __name__ == '__main__':
 
+    from kernels import kernel_linear, kernel_polinomial, kernel_rbf
     # testando
     X = np.array([
             [-1, -1],
@@ -155,8 +142,13 @@ if __name__ == '__main__':
             ])
 
     y = np.array([-1, 1, 1, -1])
-
-    z_1, z_2 = twsvm(X, y, C_1 = 10, C_2 = 10)
-
-    y_hat = preditor_twsvm(X, X, y, kernel_pol, z_1, z_2, y)
-    print(y_hat)
+    parametros = {'kernel_polinomial': {'Grau': 2}, 'kernel_rbf': {'Gamma': 0.5}}
+    #kernel_linear
+    # kernel_rbf
+    for kernel in [kernel_polinomial]:
+        parametros_kernel = parametros.get(kernel.__name__, {})
+        z_1, z_2 = twsvm(X, y, kernel, parametros_kernel, C_1 = 10, C_2 = 10)
+        y_hat = preditor_twsvm(X, X, y, kernel, parametros_kernel, z_1, z_2)
+        print(y_hat)
+        print(y)
+        assert((y_hat == y).all())
